@@ -30,6 +30,7 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
   const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [showGuidelines, setShowGuidelines] = useState(true);
+  const [isConverting, setIsConverting] = useState(false); // Nuovo stato per mostrare che sta elaborando gli HEIC
   
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [macIp, setMacIp] = useState("");
@@ -231,13 +232,35 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
   };
 
   const handleFiles = async (fileList: FileList) => {
+    setIsConverting(true); // Mostriamo l'indicatore di caricamento
+    
     for (let i = 0; i < fileList.length; i++) {
-      const file = fileList[i];
+      let file = fileList[i];
       
-      // BLOCCA FILE HEIC NATIVI
+      // LOGICA DI CONVERSIONE HEIC
       if (file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic') {
-        alert(`Il file "${file.name}" è in formato HEIC. I browser web non lo supportano. Usa JPG o PNG, oppure scatta direttamente cliccando su "Collega iPhone".`);
-        continue;
+        try {
+          // Import dinamico per evitare problemi SSR
+          const heic2any = (await import("heic2any")).default;
+          
+          const convertedBlob = await heic2any({
+            blob: file,
+            toType: "image/jpeg",
+            quality: 0.8 // Qualità buona ma non pesantissima
+          });
+          
+          // Se heic2any restituisce un array (file HEIC multipli), prendiamo il primo
+          const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+          
+          // Ricreiamo il file con estensione .jpg
+          file = new File([blob], file.name.replace(/\.heic$/i, ".jpg"), {
+            type: "image/jpeg"
+          });
+        } catch (error) {
+          console.error("Errore conversione HEIC:", error);
+          alert(`Impossibile convertire il file "${file.name}". Prova ad usare l'iPhone tramite il QR code.`);
+          continue; // Salta questo file se fallisce
+        }
       }
 
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1) + " MB";
@@ -272,6 +295,8 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
         reader.readAsDataURL(file);
       } catch (err) {}
     }
+    
+    setIsConverting(false); // Fine caricamento
   };
 
   const removePhoto = (id: string) => {
@@ -295,7 +320,7 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
 
   const handleReplaceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0 && replaceIndex !== null) {
-      handleFiles(e.target.files); // Gestisce anche qui il blocco HEIC
+      await handleFiles(e.target.files); // Gestisce anche qui la conversione
       setPhotos(prev => {
         const targetId = prev[replaceIndex]?.id;
         if (targetId) {
@@ -320,7 +345,7 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
       <div className="text-center max-w-2xl mx-auto">
         <h2 className="text-3xl font-semibold tracking-tight mb-2">Carica le foto della stanza</h2>
         <p className="text-foreground/60 text-sm">
-          Usa foto JPG/PNG. Analizziamo i file nel browser per estrarre la geometria in 3D.
+          Puoi caricare JPG, PNG e anche file <strong>HEIC</strong>. Saranno convertiti in automatico.
         </p>
       </div>
 
@@ -341,45 +366,55 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
               isDragging ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20" : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-surface-hover/30"
             )}
           >
-            <div className="w-12 h-12 rounded-full bg-surface border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-center mb-4">
-              <Upload className="w-6 h-6 text-foreground/70 animate-bounce" />
-            </div>
-            <h3 className="font-semibold text-lg mb-1">Trascina le foto qui o selezionale</h3>
-            <p className="text-xs text-foreground/50 mb-6 max-w-md">
-              Sono richiesti file JPG o PNG. Se hai foto HEIC sul Mac, convertile o collegati dal telefono.
-            </p>
+            {isConverting ? (
+              <div className="flex flex-col items-center justify-center">
+                <RefreshCw className="w-8 h-8 text-blue-500 animate-spin mb-4" />
+                <h3 className="font-semibold text-lg mb-1">Elaborazione in corso...</h3>
+                <p className="text-xs text-foreground/50">Stiamo convertendo e ottimizzando i tuoi file.</p>
+              </div>
+            ) : (
+              <>
+                <div className="w-12 h-12 rounded-full bg-surface border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-center mb-4">
+                  <Upload className="w-6 h-6 text-foreground/70 animate-bounce" />
+                </div>
+                <h3 className="font-semibold text-lg mb-1">Trascina le foto qui o selezionale</h3>
+                <p className="text-xs text-foreground/50 mb-6 max-w-md">
+                  I file originali del tuo iPhone (HEIC) verranno convertiti automaticamente.
+                </p>
 
-            <div className="flex flex-wrap justify-center gap-3">
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="bg-foreground text-background px-5 py-2.5 rounded-full text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm"
-              >
-                Seleziona file (JPG/PNG)
-              </button>
-              
-              <button 
-                onClick={() => setIsContinuityOpen(true)}
-                className="bg-surface border border-gray-200 dark:border-gray-800 text-foreground px-5 py-2.5 rounded-full text-xs font-semibold hover:bg-surface-hover active:scale-95 transition-all flex items-center gap-2"
-              >
-                <Smartphone className="w-4 h-4 text-blue-500" />
-                Collega iPhone
-              </button>
-            </div>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-foreground text-background px-5 py-2.5 rounded-full text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm"
+                  >
+                    Seleziona file
+                  </button>
+                  
+                  <button 
+                    onClick={() => setIsContinuityOpen(true)}
+                    className="bg-surface border border-gray-200 dark:border-gray-800 text-foreground px-5 py-2.5 rounded-full text-xs font-semibold hover:bg-surface-hover active:scale-95 transition-all flex items-center gap-2"
+                  >
+                    <Smartphone className="w-4 h-4 text-blue-500" />
+                    Collega iPhone
+                  </button>
+                </div>
+              </>
+            )}
 
-            {/* NOTA L'ACCEPT: forza file compatibili */}
+            {/* Accetta di nuovo i file .heic oltre a .jpg e .png */}
             <input 
               type="file" 
               ref={fileInputRef} 
               onChange={(e) => e.target.files && handleFiles(e.target.files)} 
               multiple 
-              accept="image/jpeg, image/png, image/webp, .jpg, .jpeg, .png"
+              accept="image/jpeg, image/png, image/webp, image/heic, .jpg, .jpeg, .png, .heic"
               className="hidden" 
             />
             <input 
               type="file" 
               ref={replaceInputRef} 
               onChange={handleReplaceFile} 
-              accept="image/jpeg, image/png, image/webp, .jpg, .jpeg, .png"
+              accept="image/jpeg, image/png, image/webp, image/heic, .jpg, .jpeg, .png, .heic"
               className="hidden" 
             />
           </div>
@@ -457,7 +492,7 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
               <span className="text-xs font-bold uppercase tracking-wider">Pairing iPhone in tempo reale</span>
             </div>
             <p className="text-xs text-foreground/70 leading-relaxed">
-              Evita i problemi con i file HEIC: scansiona il QR Code e la fotocamera del tuo telefono le convertirà automaticamente in JPG!
+              Scansiona il QR Code con l'iPhone per scattare foto e vederle apparire qui all'istante (convertite in automatico in JPEG).
             </p>
             <button 
               onClick={() => setIsContinuityOpen(true)}
@@ -473,8 +508,8 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
         <div className="text-xs text-foreground/40">* Elaborazione Edge locale. Nessun costo cloud.</div>
         <button
           onClick={handleNextStep}
-          disabled={photos.length === 0}
-          className={cn("px-8 py-3 rounded-full text-xs font-semibold transition-all shadow-md flex items-center gap-2", photos.length === 0 ? "bg-foreground/10 text-foreground/30 cursor-not-allowed" : "bg-foreground text-background hover:scale-105 active:scale-95")}
+          disabled={photos.length === 0 || isConverting}
+          className={cn("px-8 py-3 rounded-full text-xs font-semibold transition-all shadow-md flex items-center gap-2", (photos.length === 0 || isConverting) ? "bg-foreground/10 text-foreground/30 cursor-not-allowed" : "bg-foreground text-background hover:scale-105 active:scale-95")}
         >
           Salva e Continua <span className="text-[10px] opacity-60">Step 2 di 3</span>
         </button>
@@ -513,7 +548,7 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
                     </div>
                     <div className="space-y-1">
                       <h4 className="font-bold text-xs">1. Scansiona il QR Code con l'iPhone</h4>
-                      <p className="text-[10px] text-foreground/60 max-w-xs mx-auto">Il telefono convertirà automaticamente in JPG in fase di scatto.</p>
+                      <p className="text-[10px] text-foreground/60 max-w-xs mx-auto">Il telefono scatterà in formato compatibile per il sistema.</p>
                     </div>
                   </div>
                 )}
