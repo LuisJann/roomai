@@ -59,7 +59,7 @@ export function BeforeAfterSlider({ beforeImage, afterImage, afterFilter, overla
         handleMove(e.touches[0].clientX);
       }}
     >
-      {/* After Image (Background) */}
+      {/* Immagine Dopo (Sfondo) */}
       <div className="absolute inset-0 w-full h-full">
         <img
           src={afterImage}
@@ -78,20 +78,15 @@ export function BeforeAfterSlider({ beforeImage, afterImage, afterFilter, overla
         )}
       </div>
       
-      {/* Before Image (Foreground) */}
-      <div 
-        className="absolute inset-0 overflow-hidden"
-        style={{ width: `${sliderPosition}%` }}
-      >
-        <img
-          src={beforeImage}
-          alt="Before"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-          style={{ objectPosition: "left" }}
-        />
-      </div>
+      {/* Immagine Prima (In Primo Piano) con clip-path per un taglio perfetto */}
+      <img
+        src={beforeImage}
+        alt="Before"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+      />
 
-      {/* Slider Handle */}
+      {/* Maniglia Slider */}
       <motion.div 
         className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize flex items-center justify-center shadow-[0_0_10px_rgba(0,0,0,0.5)]"
         style={{ left: `calc(${sliderPosition}% - 2px)` }}

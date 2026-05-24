@@ -7,12 +7,10 @@ import { StepProcessing } from "@/components/workspace/wizard/StepProcessing";
 import { Camera, Ruler, Sparkles, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWorkspaceStore } from "@/store/workspaceStore";
- // <-- AGGIUNGI QUESTO
 
 export default function WorkspacePage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   
-  // Sostituiamo gli state locali con quelli di Zustand
   const setPhotos = useWorkspaceStore((state) => state.setPhotos);
   const setDimensions = useWorkspaceStore((state) => state.setDimensions);
 
@@ -24,7 +22,7 @@ export default function WorkspacePage() {
 
   return (
     <div className="max-w-5xl mx-auto py-6 space-y-8">
-      {/* ... [manteniamo l'header intatto] ... */}
+      
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 dark:border-gray-900 pb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Crea Progetto Stanza</h1>
