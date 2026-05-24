@@ -17,13 +17,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { image, name, size } = await req.json();
+    const { id, image, name, size } = await req.json();
 
     if (!image) {
       return NextResponse.json({ error: "No image data provided" }, { status: 400 });
     }
 
-    const photoId = Math.random().toString(36).substring(2, 9);
+    // Accept frontend ID or generate new
+    const photoId = id || Math.random().toString(36).substring(2, 9);
     const photo = {
       id: photoId,
       name: name || `iphone-photo-${photoId}.jpg`,

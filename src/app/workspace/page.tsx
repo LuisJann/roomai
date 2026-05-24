@@ -6,17 +6,15 @@ import { StepDimensions } from "@/components/workspace/wizard/StepDimensions";
 import { StepProcessing } from "@/components/workspace/wizard/StepProcessing";
 import { Camera, Ruler, Sparkles, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface PhotoObject {
-  url: string;
-  edgeUrl: string;
-  name: string;
-}
+import { useWorkspaceStore } from "@/store/workspaceStore";
+ // <-- AGGIUNGI QUESTO
 
 export default function WorkspacePage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [photos, setPhotos] = useState<PhotoObject[]>([]);
-  const [dimensions, setDimensions] = useState<any>(null);
+  
+  // Sostituiamo gli state locali con quelli di Zustand
+  const setPhotos = useWorkspaceStore((state) => state.setPhotos);
+  const setDimensions = useWorkspaceStore((state) => state.setDimensions);
 
   const stepsList = [
     { id: 1, name: "Foto Ambiente", desc: "Upload angolazioni", icon: Camera },
@@ -26,7 +24,7 @@ export default function WorkspacePage() {
 
   return (
     <div className="max-w-5xl mx-auto py-6 space-y-8">
-      {/* Header Info */}
+      {/* ... [manteniamo l'header intatto] ... */}
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 dark:border-gray-900 pb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Crea Progetto Stanza</h1>
@@ -35,7 +33,6 @@ export default function WorkspacePage() {
           </p>
         </div>
         
-        {/* Stepper Component */}
         <div className="flex items-center gap-3 bg-surface border border-gray-200 dark:border-gray-800 px-4 py-2.5 rounded-2xl shadow-sm overflow-x-auto max-w-full">
           {stepsList.map((s, index) => {
             const isCompleted = step > s.id;
@@ -67,13 +64,11 @@ export default function WorkspacePage() {
         </div>
       </div>
 
-      {/* Step Render Area */}
       <div className="min-h-[400px]">
         {step === 1 && (
           <StepPhotos 
             onNext={(uploadedPhotos) => {
               setPhotos(uploadedPhotos);
-              // Photos persist on backend via sessionId already saved by StepPhotos
               setStep(2);
             }} 
           />

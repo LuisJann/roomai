@@ -10,6 +10,7 @@ import {
   DollarSign, ListTodo, ChevronRight, CornerDownRight 
 } from "lucide-react";
 import Link from "next/link";
+import { useWorkspaceStore } from "@/store/workspaceStore"; // <-- IMPORTATO LO STORE
 
 interface FurnitureItem {
   id: string;
@@ -54,56 +55,45 @@ export default function ResultsPage() {
     { id: "m4", name: "Libreria a parete bianca", type: "libreria", status: "keep" },
   ]);
 
-  // Load wizard configurations from localStorage and fetch photos from session
+  // --- INIZIO INTEGRAZIONE STORE ---
+  const photosFromStore = useWorkspaceStore(state => state.photos);
+  const dimensionsFromStore = useWorkspaceStore(state => state.dimensions);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedDims = localStorage.getItem("roomai_dimensions");
-      const storedSessionId = localStorage.getItem("roomai_sessionId");
-      
-      if (storedDims) {
-        try {
-          const dims = JSON.parse(storedDims);
-          setRoomName(dims.roomName || "Il mio Soggiorno");
-          setRoomType(dims.roomType || "soggiorno");
-          setLength(dims.manual?.length || 450);
-          setWidth(dims.manual?.width || 350);
-          setHeight(dims.manual?.height || 270);
-          setDoors(dims.manual?.doors || 1);
-          setWindows(dims.manual?.windows || 2);
-        } catch (e) {
-          console.error("Failed to parse stored dimensions", e);
+      // Imposta le tue misure 3D
+      if (dimensionsFromStore) {
+        setRoomName(dimensionsFromStore.roomName || "Il mio Soggiorno");
+        setRoomType(dimensionsFromStore.roomType || "soggiorno");
+        setLength(dimensionsFromStore.manual?.length || 450);
+        setWidth(dimensionsFromStore.manual?.width || 350);
+        setHeight(dimensionsFromStore.manual?.height || 270);
+        setDoors(dimensionsFromStore.manual?.doors || 1);
+        setWindows(dimensionsFromStore.manual?.windows || 2);
+      } else {
+        const storedDims = localStorage.getItem("roomai_dimensions");
+        if (storedDims) {
+          try {
+            const dims = JSON.parse(storedDims);
+            setRoomName(dims.roomName || "Il mio Soggiorno");
+            setRoomType(dims.roomType || "soggiorno");
+            setLength(dims.manual?.length || 450);
+            setWidth(dims.manual?.width || 350);
+            setHeight(dims.manual?.height || 270);
+            setDoors(dims.manual?.doors || 1);
+            setWindows(dims.manual?.windows || 2);
+          } catch (e) {}
         }
       }
 
-      // Fetch photos from backend session if sessionId exists
-      if (storedSessionId) {
-        const fetchPhotos = async () => {
-          try {
-            const res = await fetch(`/api/session/poll?sessionId=${storedSessionId}`);
-            if (res.ok) {
-              const data = await res.json();
-              const remotePhotos = data.photos || [];
-              if (remotePhotos.length > 0) {
-                // Use backend photos
-                const mapped = remotePhotos.map((p: any) => ({
-                  url: p.url,
-                  edgeUrl: p.url,
-                  name: p.name
-                }));
-                setPhotosCount(mapped.length);
-                setUserPhotos(mapped);
-              }
-            }
-          } catch (err) {
-            console.error("Failed to fetch session photos", err);
-            // No fallback - will show placeholder in UI
-          }
-        };
-
-        fetchPhotos();
+      // Estrai le tue VERE foto dallo store globale
+      if (photosFromStore && photosFromStore.length > 0) {
+        setPhotosCount(photosFromStore.length);
+        setUserPhotos(photosFromStore);
       }
     }
-  }, []);
+  }, [photosFromStore, dimensionsFromStore]);
+  // --- FINE INTEGRAZIONE STORE ---
 
   // Update all items to "keep" if "Riusa il più possibile" is checked
   useEffect(() => {
@@ -265,7 +255,6 @@ export default function ResultsPage() {
   // Generate dynamic actionable advice
   const getDynamicAdvice = () => {
     const keptCount = existingMobili.filter(m => m.status === "keep").length;
-    const replaced = existingMobili.filter(m => m.status === "replace");
     
     const advices = [];
 

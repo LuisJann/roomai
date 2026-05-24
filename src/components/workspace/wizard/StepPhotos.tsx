@@ -40,10 +40,10 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
+  const removedIdsRef = useRef<Set<string>>(new Set());
 
   // Initialize pairing session & IP defaults
   useEffect(() => {
-    // Prefill with local hostname/port if on browser
     if (typeof window !== "undefined") {
       setMacPort(window.location.port || "3000");
       setMacIp(window.location.hostname);
@@ -51,6 +51,12 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
 
     const startSession = async () => {
       try {
+        const storedSessionId = localStorage.getItem("roomai_sessionId");
+        if (storedSessionId) {
+          setSessionId(storedSessionId);
+          return;
+        }
+
         const res = await fetch("/api/session/new");
         if (res.ok) {
           const data = await res.json();
@@ -63,6 +69,11 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
         console.error("Errore inizializzazione sessione di pairing:", err);
       }
     };
+
+    const storedRemoved = localStorage.getItem("roomai_removed_ids");
+    if (storedRemoved) {
+      removedIdsRef.current = new Set(JSON.parse(storedRemoved));
+    }
 
     startSession();
   }, []);
@@ -78,21 +89,19 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
           const data = await res.json();
           const remotePhotos = data.photos || [];
 
-          // Compare and add missing ones
           setPhotos(prev => {
             const updated = [...prev];
             let modified = false;
 
             for (const rPhoto of remotePhotos) {
               const exists = prev.some(p => p.id === rPhoto.id);
-              if (!exists) {
+              if (!exists && !removedIdsRef.current.has(rPhoto.id)) {
                 modified = true;
-                // Add with placeholder values and run analysis on next cycle
                 updated.push({
                   id: rPhoto.id,
                   name: rPhoto.name,
                   url: rPhoto.url,
-                  edgeUrl: rPhoto.url, // Filled after canvas analysis loads
+                  edgeUrl: rPhoto.url, 
                   showEdges: false,
                   size: rPhoto.size,
                   quality: "eccellente",
@@ -100,8 +109,6 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
                   isDuplicate: false,
                   brightness: 120
                 });
-
-                // Trigger async client-side analysis
                 analyzeImageFromUrl(rPhoto.url, rPhoto.id);
               }
             }
@@ -114,12 +121,10 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
       }
     };
 
-    // Poll every 1.5 seconds always (both iPhone modal and desktop uploads)
     const interval = setInterval(pollSession, 1500);
     return () => clearInterval(interval);
   }, [sessionId]);
 
-  // Guidelines items
   const guidelines = [
     {
       title: "Almeno 4 angolazioni",
@@ -143,26 +148,11 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
     }
   ];
 
-  // REAL CANVAS ANALYSIS: Sobel Edge filter, Luminance check & Sharpness
-  const readFileAsDataURL = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result;
-        if (typeof result === "string") {
-          resolve(result);
-        } else {
-          reject(new Error("Impossibile leggere il file come data URL"));
-        }
-      };
-      reader.onerror = () => reject(new Error("Errore durante la lettura del file."));
-      reader.readAsDataURL(file);
-    });
-  };
-
   const analyzeImageFromUrl = (url: string, id: string) => {
     const img = new window.Image();
-    img.crossOrigin = "anonymous";
+    if (!url.startsWith("data:")) {
+      img.crossOrigin = "anonymous";
+    }
     img.src = url;
     
     img.onload = () => {
@@ -172,7 +162,6 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
         setPhotos(prev => {
           const updated = prev.map(p => {
             if (p.id === id) {
-              // Check if duplicate compared to others
               const isDuplicate = prev.some(other => 
                 other.id !== id && 
                 Math.abs(other.brightness - analysis.brightness) < 3 && 
@@ -217,7 +206,6 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
     const imgData = ctx.getImageData(0, 0, w, h);
     const data = imgData.data;
 
-    // 1. Luminance Average
     let sumLum = 0;
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i];
@@ -227,13 +215,11 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
     }
     const brightness = Math.round(sumLum / (data.length / 4));
 
-    // 2. Grayscale buffer for Sobel
     const gray = new Uint8Array(w * h);
     for (let i = 0; i < data.length; i += 4) {
       gray[i / 4] = Math.round(0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2]);
     }
 
-    // 3. Sobel filter pass
     const edgeCanvas = document.createElement("canvas");
     edgeCanvas.width = w;
     edgeCanvas.height = h;
@@ -261,18 +247,16 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
 
         const edgeIdx = idx * 4;
         const val = Math.min(255, magnitude);
-        // Design blueprint color lines
-        edgeData[edgeIdx] = Math.round(val * 0.2);     // Red
-        edgeData[edgeIdx+1] = Math.round(val * 0.6);   // Green
-        edgeData[edgeIdx+2] = Math.round(val);         // Blue
-        edgeData[edgeIdx+3] = 255;                     // Alpha
+        edgeData[edgeIdx] = Math.round(val * 0.2);
+        edgeData[edgeIdx+1] = Math.round(val * 0.6);
+        edgeData[edgeIdx+2] = Math.round(val);
+        edgeData[edgeIdx+3] = 255;
       }
     }
     edgeCtx.putImageData(edgeImgData, 0, 0);
 
     const avgEdge = edgeSum / (w * h);
 
-    // Formulate suggestions
     const suggestions: string[] = [];
     let quality: "eccellente" | "accettabile" | "insufficiente" = "eccellente";
 
@@ -317,28 +301,44 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1) + " MB";
+      const fileId = Math.random().toString(36).substring(2, 9);
 
       try {
-        // Convert file to base64 and upload to session backend
         const reader = new FileReader();
         reader.onload = async () => {
           const base64Data = reader.result as string;
 
+          // Immediate local preview
+          setPhotos(prev => {
+            const exists = prev.some(p => p.id === fileId);
+            if (exists) return prev;
+            return [...prev, {
+              id: fileId,
+              name: file.name,
+              url: base64Data,
+              edgeUrl: base64Data,
+              showEdges: false,
+              size: sizeMB,
+              quality: "eccellente",
+              suggestions: ["Caricamento analisi..."],
+              isDuplicate: false,
+              brightness: 120
+            }];
+          });
+          
+          analyzeImageFromUrl(base64Data, fileId);
+
           try {
-            const uploadRes = await fetch(`/api/session/upload?sessionId=${sessionId}`, {
+            await fetch(`/api/session/upload?sessionId=${sessionId}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
+                id: fileId,
                 image: base64Data,
                 name: file.name,
                 size: sizeMB
               })
             });
-
-            if (!uploadRes.ok) {
-              console.error("Errore upload:", await uploadRes.json());
-            }
-            // The photo will be picked up by the polling mechanism
           } catch (err) {
             console.error("Errore invio foto al backend:", err);
           }
@@ -352,6 +352,8 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
 
   const removePhoto = (id: string) => {
     setPhotos(prev => prev.filter(p => p.id !== id));
+    removedIdsRef.current.add(id);
+    localStorage.setItem("roomai_removed_ids", JSON.stringify(Array.from(removedIdsRef.current)));
   };
 
   const toggleEdges = (index: number) => {
@@ -374,27 +376,49 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
     if (e.target.files && e.target.files.length > 0 && replaceIndex !== null && sessionId) {
       const file = e.target.files[0];
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1) + " MB";
+      const fileId = Math.random().toString(36).substring(2, 9);
 
-      // Remove old photo from UI
-      setPhotos(prev => prev.filter((_, idx) => idx !== replaceIndex));
+      setPhotos(prev => {
+        const targetId = prev[replaceIndex]?.id;
+        if (targetId) {
+          removedIdsRef.current.add(targetId);
+          localStorage.setItem("roomai_removed_ids", JSON.stringify(Array.from(removedIdsRef.current)));
+        }
+        return prev.filter((_, idx) => idx !== replaceIndex);
+      });
       setReplaceIndex(null);
 
       try {
-        // Upload new file to session backend
         const reader = new FileReader();
         reader.onload = async () => {
           const base64Data = reader.result as string;
+
+          setPhotos(prev => [...prev, {
+            id: fileId,
+            name: file.name,
+            url: base64Data,
+            edgeUrl: base64Data,
+            showEdges: false,
+            size: sizeMB,
+            quality: "eccellente",
+            suggestions: ["Caricamento analisi..."],
+            isDuplicate: false,
+            brightness: 120
+          }]);
+          
+          analyzeImageFromUrl(base64Data, fileId);
+
           try {
             await fetch(`/api/session/upload?sessionId=${sessionId}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
+                id: fileId,
                 image: base64Data,
                 name: file.name,
                 size: sizeMB
               })
             });
-            // New photo will appear via polling
           } catch (err) {
             console.error("Errore sostituzione foto:", err);
           }
@@ -407,8 +431,6 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
   };
 
   const handleNextStep = () => {
-    // Save only sessionId, not the image data (too large)
-    // Images are already on the backend
     if (sessionId) {
       localStorage.setItem("roomai_sessionId", sessionId);
     }
@@ -419,7 +441,6 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
     })));
   };
 
-  // pairing link
   const pairingUrl = sessionId 
     ? `http://${macIp}:${macPort}/mobile-upload?session=${sessionId}`
     : "";
@@ -752,7 +773,6 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
                 {pairingUrl && (
                   <div className="text-center space-y-4">
                     <div className="bg-white p-3 rounded-2xl inline-block shadow-inner border border-gray-200 mx-auto">
-                      {/* Generates a QR Code from qrserver.com */}
                       <img 
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(pairingUrl)}`}
                         alt="Scansiona QR Code"
