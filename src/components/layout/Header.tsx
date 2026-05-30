@@ -13,19 +13,15 @@ export function Header() {
             <span className="font-semibold text-lg tracking-tight">RoomAI</span>
           </div>
           
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
-            <Link href="#features" className="text-foreground/70 hover:text-foreground transition-colors">Funzionalità</Link>
-            <Link href="#styles" className="text-foreground/70 hover:text-foreground transition-colors">Stili</Link>
-            <Link href="#pricing" className="text-foreground/70 hover:text-foreground transition-colors">Prezzi</Link>
-          </nav>
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+            <span className="text-foreground/50">La tua stanza, il tuo design.</span>
+          </div>
           
           <div className="flex items-center gap-4">
-            <Link href="/workspace" className="bg-foreground text-background px-5 py-2.5 rounded-full text-sm font-medium hover:scale-105 transition-transform active:scale-95 shadow-sm">
-              Inizia il Progetto
+            <Link href="/workspace/3d-editor" className="bg-foreground text-background px-5 py-2.5 rounded-full text-sm font-medium hover:scale-105 transition-transform active:scale-95 shadow-sm">
+              Avvia l'App
             </Link>
-            <button className="md:hidden p-2">
-              <Menu className="w-6 h-6" />
-            </button>
+
           </div>
         </div>
       </div>

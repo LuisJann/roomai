@@ -4,14 +4,25 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { GripVertical } from "lucide-react";
 
+export interface ProposedChange {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  status: "replace" | "proposed" | "keep" | "evaluate";
+}
+
 interface BeforeAfterSliderProps {
   beforeImage: string;
   afterImage: string;
   afterFilter?: string;
   overlayImage?: string;
+  proposedChanges?: ProposedChange[];
 }
 
-export function BeforeAfterSlider({ beforeImage, afterImage, afterFilter, overlayImage }: BeforeAfterSliderProps) {
+export function BeforeAfterSlider({ beforeImage, afterImage, afterFilter, overlayImage, proposedChanges = [] }: BeforeAfterSliderProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -59,7 +70,7 @@ export function BeforeAfterSlider({ beforeImage, afterImage, afterFilter, overla
         handleMove(e.touches[0].clientX);
       }}
     >
-      {/* Immagine Dopo (Sfondo) */}
+      {/* Immagine Dopo (Sfondo) e Layer Realtà Aumentata */}
       <div className="absolute inset-0 w-full h-full">
         <img
           src={afterImage}
@@ -76,6 +87,27 @@ export function BeforeAfterSlider({ beforeImage, afterImage, afterFilter, overla
             />
           </div>
         )}
+        
+        {/* AR Overlays per i mobili */}
+        {proposedChanges.filter(c => c.status === "replace" || c.status === "proposed").map((change) => (
+          <div 
+            key={change.id}
+            className="absolute border-2 border-blue-400 bg-blue-500/10 pointer-events-none"
+            style={{ 
+              left: `${change.x}%`, 
+              top: `${change.y}%`, 
+              width: `${change.w}%`, 
+              height: `${change.h}%`,
+              boxShadow: "0 0 15px rgba(59, 130, 246, 0.5) inset"
+            }}
+          >
+            <div className="absolute -top-6 left-0 bg-blue-500/90 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm whitespace-nowrap">
+              {change.status === "proposed" ? "[+] " : "[Sostituisci] "}{change.name}
+            </div>
+            {/* Ologramma Grid Pattern */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(59, 130, 246, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.5) 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
+          </div>
+        ))}
       </div>
       
       {/* Immagine Prima (In Primo Piano) con clip-path per un taglio perfetto */}

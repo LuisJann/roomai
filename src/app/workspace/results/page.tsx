@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { BeforeAfterSlider } from "@/components/workspace/BeforeAfterSlider";
-import { RoomViewer3D } from "@/components/workspace/RoomViewer3D";
 import { cn } from "@/lib/utils";
 import { 
-  Download, Share2, Layers, Sliders, ShieldCheck, 
+  Download, Share2, Sliders, ShieldCheck, 
   Trash2, Sparkles, HelpCircle, CheckSquare, Square, 
-  DollarSign, ListTodo, ChevronRight, CornerDownRight 
+  DollarSign, ListTodo, ChevronRight, CornerDownRight
 } from "lucide-react";
 import Link from "next/link";
 import { useWorkspaceStore } from "@/store/workspaceStore"; // <-- IMPORTATO LO STORE
@@ -26,10 +25,16 @@ interface FurnitureItem {
 }
 
 export default function ResultsPage() {
-  const [viewMode, setViewMode] = useState<"render" | "model3d">("render");
   const [restylingLevel, setRestylingLevel] = useState<"light" | "medium" | "complete">("medium");
   const [reuseMax, setReuseMax] = useState(false);
   const [budget, setBudget] = useState(1200);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [isRendering, setIsRendering] = useState(false);
+
+  const triggerRenderSimulation = () => {
+    setIsRendering(true);
+    setTimeout(() => setIsRendering(false), 2000);
+  };
 
   // Room config state (loaded from localStorage or defaults)
   const [roomName, setRoomName] = useState("Il mio Soggiorno");
@@ -39,29 +44,48 @@ export default function ResultsPage() {
   const [height, setHeight] = useState(270);
   const [doors, setDoors] = useState(1);
   const [windows, setWindows] = useState(2);
+  
   const [photosCount, setPhotosCount] = useState(4);
   const [userPhotos, setUserPhotos] = useState<Array<{ url: string; edgeUrl: string; name: string }>>([]);
 
-  // Existing furniture state
-  const [existingMobili, setExistingMobili] = useState<Array<{
+  // Style Directives state
+  const [styleDirectives, setStyleDirectives] = useState<Array<{
     id: string;
     name: string;
-    type: string;
-    status: "keep" | "evaluate" | "replace";
+    status: "add" | "avoid" | "neutral";
   }>>([
-    { id: "m1", name: "Divano 3 posti grigio", type: "divano", status: "keep" },
-    { id: "m2", name: "Tavolo da pranzo in legno", type: "tavolo", status: "evaluate" },
-    { id: "m3", name: "Mobile TV basso", type: "mobile-tv", status: "replace" },
-    { id: "m4", name: "Libreria a parete bianca", type: "libreria", status: "keep" },
+    { id: "d1", name: "Illuminazione Ambientale Calda", status: "neutral" },
+    { id: "d2", name: "Piante da Interno (Verde)", status: "neutral" },
+    { id: "d3", name: "Materiali Naturali (Legno/Pietra)", status: "neutral" },
+    { id: "d4", name: "Tappeti di Design", status: "neutral" },
+    { id: "d5", name: "Quadri e Arte Moderna", status: "neutral" },
+    { id: "d6", name: "Pareti con Colori d'Accento", status: "neutral" },
+    { id: "d7", name: "Tende e Tessuti Morbidi", status: "neutral" },
+    { id: "d8", name: "Mobili Sospesi Minimal", status: "neutral" },
+    { id: "d9", name: "Lampadari a Sospensione Centrali", status: "neutral" },
+    { id: "d10", name: "Tonalità Indaco/Blu", status: "neutral" }
   ]);
 
-  // --- INIZIO INTEGRAZIONE STORE ---
   const photosFromStore = useWorkspaceStore(state => state.photos);
   const dimensionsFromStore = useWorkspaceStore(state => state.dimensions);
+  const detectedFurnitureFromStore = useWorkspaceStore(state => state.detectedFurniture);
+  const geminiApiKey = useWorkspaceStore(state => state.geminiApiKey);
+  const incrementFreeGenerations = useWorkspaceStore(state => state.incrementFreeGenerations);
+  const addNotification = useWorkspaceStore(state => state.addNotification);
+  const removeNotification = useWorkspaceStore(state => state.removeNotification);
+  const addPendingTask = useWorkspaceStore(state => state.addPendingTask);
+  const removePendingTask = useWorkspaceStore(state => state.removePendingTask);
+  const saveRender = useWorkspaceStore(state => state.saveRender);
+  const pendingTasks = useWorkspaceStore(state => state.pendingTasks);
+
+  const [realAfterImage, setRealAfterImage] = useState<string | null>(null);
+  const [customPrompt, setCustomPrompt] = useState("");
+  const [isReviewingPrompt, setIsReviewingPrompt] = useState(false);
+  const [draftPrompt, setDraftPrompt] = useState("");
+  const isRealGenerating = pendingTasks.some(t => t.type === "render");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Imposta le tue misure 3D
       if (dimensionsFromStore) {
         setRoomName(dimensionsFromStore.roomName || "Il mio Soggiorno");
         setRoomType(dimensionsFromStore.roomType || "soggiorno");
@@ -86,192 +110,35 @@ export default function ResultsPage() {
         }
       }
 
-      // Estrai le tue VERE foto dallo store globale
       if (photosFromStore && photosFromStore.length > 0) {
         setPhotosCount(photosFromStore.length);
         setUserPhotos(photosFromStore);
       }
     }
-  }, [photosFromStore, dimensionsFromStore]);
-  // --- FINE INTEGRAZIONE STORE ---
+  }, [photosFromStore, dimensionsFromStore, detectedFurnitureFromStore]);
 
-  // Update all items to "keep" if "Riusa il più possibile" is checked
-  useEffect(() => {
-    if (reuseMax) {
-      setExistingMobili(prev => prev.map(m => ({ ...m, status: "keep" })));
-    }
-  }, [reuseMax]);
-
-  const toggleMobilStatus = (id: string, newStatus: "keep" | "evaluate" | "replace") => {
-    if (reuseMax && newStatus !== "keep") {
-      setReuseMax(false);
-    }
-    setExistingMobili(prev => prev.map(m => m.id === id ? { ...m, status: newStatus } : m));
+  const toggleDirectiveStatus = (id: string, newStatus: "add" | "avoid" | "neutral") => {
+    setStyleDirectives(prev => prev.map(m => m.id === id ? { ...m, status: newStatus } : m));
+    triggerRenderSimulation();
   };
 
-  // Dynamically compute the 3D meshes based on room size & status selections
-  const getFurniture3DList = (): FurnitureItem[] => {
-    const list: FurnitureItem[] = [];
-    const lenM = length / 100;
-    const widM = width / 100;
-
-    // Sofa (m1)
-    const m1 = existingMobili.find(m => m.id === "m1");
-    if (m1) {
-      list.push({
-        id: "m1",
-        name: "Divano Grigio (Esistente)",
-        type: "sofa",
-        x: -lenM / 4,
-        y: 0,
-        z: widM / 3.5,
-        w: 2.0,
-        h: 0.85,
-        d: 0.9,
-        status: m1.status
-      });
-    }
-
-    // Dining Table (m2)
-    const m2 = existingMobili.find(m => m.id === "m2");
-    if (m2) {
-      list.push({
-        id: "m2",
-        name: "Tavolo Legno (Esistente)",
-        type: "table",
-        x: lenM / 3.5,
-        y: 0,
-        z: -widM / 3.5,
-        w: 1.4,
-        h: 0.75,
-        d: 0.8,
-        status: m2.status
-      });
-    }
-
-    // TV Cabinet (m3)
-    const m3 = existingMobili.find(m => m.id === "m3");
-    if (m3) {
-      list.push({
-        id: "m3",
-        name: "Mobile TV Basso (Esistente)",
-        type: "cabinet",
-        x: -lenM / 4,
-        y: 0,
-        z: -widM / 2.5,
-        w: 1.6,
-        h: 0.45,
-        d: 0.45,
-        status: m3.status
-      });
-    }
-
-    // Bookcase (m4)
-    const m4 = existingMobili.find(m => m.id === "m4");
-    if (m4) {
-      list.push({
-        id: "m4",
-        name: "Libreria Parete (Esistente)",
-        type: "bookcase",
-        x: -lenM / 2 + 0.15,
-        y: 0,
-        z: 0,
-        w: 0.3,
-        h: 2.0,
-        d: 1.2,
-        status: m4.status
-      });
-    }
-
-    // AI proposed items based on levels & substitutions
-    // 1. Proposed Rug (always proposed in medium/complete to anchor the room)
-    if (restylingLevel !== "light") {
-      list.push({
-        id: "prop-rug",
-        name: "Tappeto AI (Proposta)",
-        type: "rug",
-        x: -lenM / 4,
-        y: 0.005,
-        z: widM / 12,
-        w: 2.4,
-        h: 0.02,
-        d: 1.8,
-        status: "proposed"
-      });
-    }
-
-    // 2. Proposed Armchair (added in medium/complete)
-    if (restylingLevel !== "light") {
-      list.push({
-        id: "prop-chair",
-        name: "Poltrona AI (Proposta)",
-        type: "chair",
-        x: lenM / 10,
-        y: 0,
-        z: widM / 4,
-        w: 0.8,
-        h: 0.75,
-        d: 0.8,
-        status: "proposed"
-      });
-    }
-
-    // 3. Proposed TV Cabinet (if existing cabinet is marked "replace" or level is complete)
-    const replaceTV = existingMobili.find(m => m.id === "m3")?.status === "replace";
-    if (replaceTV || restylingLevel === "complete") {
-      list.push({
-        id: "prop-tv-cab",
-        name: "Mobile Sospeso AI (Proposta)",
-        type: "cabinet",
-        x: -lenM / 4,
-        y: 0.3, // suspended
-        z: -widM / 2.6,
-        w: 1.8,
-        h: 0.4,
-        d: 0.4,
-        status: "proposed"
-      });
-    }
-
-    // 4. Proposed Dining Light (if level is complete)
-    if (restylingLevel === "complete") {
-      list.push({
-        id: "prop-light",
-        name: "Sospensione AI (Proposta)",
-        type: "lighting",
-        x: lenM / 3.5,
-        y: 1.7, // hanging
-        z: -widM / 3.5,
-        w: 0.6,
-        h: 0.6,
-        d: 0.6,
-        status: "proposed"
-      });
-    }
-
-    return list;
-  };
-
-  // Generate dynamic actionable advice
   const getDynamicAdvice = () => {
-    const keptCount = existingMobili.filter(m => m.status === "keep").length;
-    
     const advices = [];
 
     if (restylingLevel === "light") {
       advices.push({
         title: "Intervento Conservativo",
-        desc: `Stai mantenendo ${keptCount} mobili su ${existingMobili.length}. L'AI ha focalizzato il budget su complementi (tessili, illuminazione) per rinfrescare l'ambiente senza costose demolizioni.`
+        desc: `L'AI focalizzerà il budget su complementi (tessili, illuminazione) per rinfrescare l'ambiente mantenendo la struttura base.`
       });
     } else if (restylingLevel === "medium") {
       advices.push({
         title: "Bilanciamento Spazi & Funzioni",
-        desc: "Sostituendo il mobile TV esistente, abbiamo aperto spazio per una credenza sospesa visivamente più leggera, che allinea il soggiorno allo stile Modern Minimalist."
+        desc: "Sostituendo alcuni elementi chiave, apriamo spazio per arredi visivamente più leggeri e moderni."
       });
     } else {
       advices.push({
         title: "Rinnovo Architettonico Completo",
-        desc: "L'AI consiglia la verniciatura scura della parete attrezzata (Nord) per contrastare il divano grigio e l'inserimento di una lampada a sospensione sopra il tavolo da pranzo."
+        desc: "L'AI consiglia un totale stravolgimento dei volumi e dei colori per un impatto visivo estremo e lussuoso."
       });
     }
 
@@ -296,8 +163,8 @@ export default function ResultsPage() {
       { text: "Riposizionamento divano a 25cm dalla parete Est", priority: "Alta", cost: "Gratis" }
     ];
 
-    if (existingMobili.find(m => m.id === "m3")?.status === "replace") {
-      list.push({ text: "Rimozione mobile TV e montaggio credenza sospesa", priority: "Alta", cost: "Medio" });
+    if (styleDirectives.find(m => m.name.includes("Illuminazione") && m.status === "add")) {
+      list.push({ text: "Acquisto lampade a luce calda (2700K)", priority: "Alta", cost: "Medio" });
     }
 
     if (restylingLevel !== "light") {
@@ -311,18 +178,121 @@ export default function ResultsPage() {
     return list;
   };
 
-  const beforeImage = userPhotos.length > 0 ? userPhotos[0].url : "/modern_living_room_before.png";
-  const afterImage = userPhotos.length > 0 ? userPhotos[0].url : "/modern_living_room_after.png";
-  const overlayImage = userPhotos.length > 0 ? userPhotos[0].edgeUrl : undefined;
+  const currentPhoto = userPhotos.length > 0 ? userPhotos[selectedPhotoIndex] : null;
+  const beforeImage = currentPhoto ? currentPhoto.url : "/modern_living_room_before.png";
+  const afterImage = realAfterImage || beforeImage;
+  const overlayImage = realAfterImage ? undefined : (currentPhoto ? currentPhoto.edgeUrl : undefined);
 
   const getAfterFilter = () => {
-    if (restylingLevel === "light") {
-      return "brightness(1.06) contrast(1.03) saturate(0.96)";
-    } else if (restylingLevel === "medium") {
-      return "brightness(1.12) contrast(1.08) saturate(0.92) sepia(0.04) hue-rotate(4deg)";
-    } else {
-      return "brightness(1.18) contrast(1.14) saturate(0.86) sepia(0.08) hue-rotate(-4deg)";
+    const addedCount = styleDirectives.filter(m => m.status === "add").length;
+    if (budget > 3000 && restylingLevel === "complete") return "contrast(1.1) saturate(1.2)";
+    if (restylingLevel === "light" && addedCount === 0) return "brightness(1.05)";
+    if (addedCount > 2) return "hue-rotate(-5deg) saturate(1.1)";
+    return "brightness(1.1) contrast(1.05)";
+  };
+
+  const prepareGeneration = () => {
+    if (!currentPhoto?.url) {
+      alert("Nessuna foto disponibile per la generazione.");
+      return;
     }
+
+    const taskId = `render_${Date.now()}`;
+    addNotification({ id: taskId, message: "Analisi della stanza in corso...", type: "info" });
+    addPendingTask({ id: taskId, type: "render", status: "loading" });
+
+    (async () => {
+      try {
+        const visionRes = await fetch("/api/vision", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            image: currentPhoto.url,
+          }),
+        });
+
+        const visionData = await visionRes.json();
+
+        if (!visionRes.ok) {
+          throw new Error(visionData.error || "Errore durante l'analisi visiva della stanza.");
+        }
+
+        let roomDescription = visionData.description || "";
+        
+        const addItems = styleDirectives.filter(m => m.status === "add").map(m => m.name).join(", ");
+        const avoidItems = styleDirectives.filter(m => m.status === "avoid").map(m => m.name).join(", ");
+        const instructions = `MUST ADD: ${addItems || "None"}. MUST STRICTLY AVOID: ${avoidItems || "None"}. MAXIMUM BUDGET: €${budget}. User custom request: ${customPrompt || "None"}`;
+
+        const finalPrompt = `BASE_STRUCTURE: ${roomDescription} | STYLE_OVERRIDE: ${restylingLevel} restyling, modern, clean, architectural digest, 8k resolution | USER_INSTRUCTION: ${instructions}. Generate a photorealistic interior design strictly following the base structure and applying the style and instructions.`;
+        
+        setDraftPrompt(finalPrompt);
+        setIsReviewingPrompt(true);
+        removePendingTask(taskId);
+        removeNotification(taskId);
+      } catch (err: any) {
+        console.error(err);
+        addNotification({ 
+          id: taskId,
+          message: `Errore Visione: ${err.message}`, 
+          type: "error"
+        });
+        removePendingTask(taskId);
+        removeNotification(taskId);
+      }
+    })();
+  };
+
+  const confirmGeneration = () => {
+    setIsReviewingPrompt(false);
+    const taskId = `render_final_${Date.now()}`;
+    addNotification({ id: taskId, message: "Generazione Render Finale avviata...", type: "info" });
+    addPendingTask({ id: taskId, type: "render", status: "loading" });
+
+    (async () => {
+      try {
+        const genRes = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: draftPrompt }),
+        });
+
+        const genData = await genRes.json();
+
+        if (!genRes.ok) {
+           throw new Error(genData.error || "Errore durante la generazione dell'immagine.");
+        }
+
+        const finalUrl = genData.outputUrl;
+        try {
+          await fetch('/api/gallery/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: finalUrl, type: 'render' })
+          });
+        } catch (err) {
+          console.error("Failed to save render to DB:", err);
+        }
+        incrementFreeGenerations();
+        
+        addNotification({ 
+          id: taskId,
+          message: `Restyling Gratuito completato!`, 
+          type: "success",
+          link: "/workspace/gallery"
+        });
+        
+        setRealAfterImage(finalUrl);
+      } catch (err: any) {
+        console.error(err);
+        addNotification({ 
+          id: taskId,
+          message: `Errore Generazione: ${err.message}`, 
+          type: "error"
+        });
+      } finally {
+        removePendingTask(taskId);
+      }
+    })();
   };
 
   return (
@@ -344,16 +314,21 @@ export default function ResultsPage() {
 
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => alert("Rendering HD in coda locale. Tempo stimato: 1 minuto.")}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface border border-gray-200 dark:border-gray-800 text-xs font-semibold hover:bg-surface-hover transition-colors"
+            onClick={prepareGeneration}
+            disabled={isRealGenerating}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm bg-blue-600 hover:bg-blue-700 text-white"
+            )}
           >
-            <Share2 className="w-3.5 h-3.5" /> Condividi
+            {isRealGenerating ? <Sparkles className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            {isRealGenerating ? "Elaborazione Cloud..." : "Genera Restyling (Gratis)"}
           </button>
+          
           <button 
             onClick={() => alert("Salvataggio layout in formato PDF completato.")}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-foreground text-background text-xs font-semibold hover:opacity-90 transition-opacity shadow-sm"
           >
-            <Download className="w-3.5 h-3.5" /> Esporta Progetto
+            <Download className="w-3.5 h-3.5" /> Esporta
           </button>
         </div>
       </div>
@@ -362,49 +337,48 @@ export default function ResultsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Side: Viewport Container */}
-        <div className="lg:col-span-7 space-y-4">
-          
-          {/* View Mode Tabs */}
+        <div className="lg:col-span-7 space-y-4">          
+          {/* Top Bar for Results View */}
           <div className="flex justify-between items-center bg-surface border border-gray-200 dark:border-gray-800 rounded-2xl p-2 shadow-sm">
             <div className="flex gap-2">
-              <button 
-                onClick={() => setViewMode("render")}
-                className={cn(
-                  "px-4 py-2 rounded-xl text-xs font-bold transition-all",
-                  viewMode === "render" ? "bg-foreground text-background" : "text-foreground/60 hover:text-foreground"
-                )}
-              >
+              <div className="px-4 py-2 rounded-xl text-xs font-bold bg-foreground text-background">
                 Render Prima / Dopo
-              </button>
-              <button 
-                onClick={() => setViewMode("model3d")}
-                className={cn(
-                  "px-4 py-2 rounded-xl text-xs font-bold transition-all",
-                  viewMode === "model3d" ? "bg-foreground text-background" : "text-foreground/60 hover:text-foreground"
-                )}
-              >
-                Ricostruzione 3D Metrica
-              </button>
-            </div>
-            
-            <div className="text-[10px] text-foreground/40 font-mono pr-2">
-              {viewMode === "render" ? "VISTA FOTOREALISTICA STIMATA" : "VISTA INTERATTIVA WEBGL"}
+              </div>
             </div>
           </div>
 
-          {/* Canvas Wrapper */}
-          <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl p-3 shadow-sm overflow-hidden min-h-[350px] flex items-center justify-center">
-            {viewMode === "render" ? (
+          {/* Render Viewer Wrapper */}
+          <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl p-3 shadow-sm overflow-hidden flex flex-col gap-3">
+            <div className="relative min-h-[350px] flex items-center justify-center rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-900">
+              {isRendering && !isRealGenerating && (
+                <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center">
+                  <Sparkles className="w-8 h-8 text-blue-500 animate-spin mb-3" />
+                  <p className="text-sm font-bold animate-pulse">Aggiornamento ologrammi AR...</p>
+                  <p className="text-[10px] text-foreground/50 mt-1">Calcolo posizioni in tempo reale</p>
+                </div>
+              )}
+              {isRealGenerating && (
+                <div className="absolute inset-0 z-20 bg-background/90 backdrop-blur-md flex flex-col items-center justify-center">
+                  <div className="relative w-16 h-16 mb-4">
+                    <div className="absolute inset-0 border-4 border-blue-500/30 rounded-full animate-pulse" />
+                    <div className="absolute inset-0 border-4 border-t-blue-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
+                  </div>
+                  <p className="text-sm font-bold animate-pulse text-blue-500">GPU al lavoro in background...</p>
+                  <p className="text-[10px] text-foreground/50 mt-2 font-mono">Puoi navigare in altre pagine. Notifica al completamento.</p>
+                </div>
+              )}
+
               <div className="w-full">
                 {beforeImage && beforeImage.length > 0 ? (
                   <BeforeAfterSlider 
                     beforeImage={beforeImage}
                     afterImage={afterImage}
-                    afterFilter={getAfterFilter()}
+                    afterFilter={realAfterImage ? "none" : getAfterFilter()}
                     overlayImage={overlayImage}
+                    proposedChanges={[]}
                   />
                 ) : (
-                  <div className="w-full h-80 bg-gray-100 dark:bg-gray-900 rounded-2xl flex items-center justify-center text-center">
+                  <div className="w-full h-80 flex items-center justify-center text-center">
                     <div className="space-y-3 max-w-sm">
                       <p className="text-sm text-foreground/60 font-medium">Foto non caricate</p>
                       <p className="text-xs text-foreground/40">Torna al step 1 per caricare le foto della tua stanza e vedrai il preview qui.</p>
@@ -412,16 +386,23 @@ export default function ResultsPage() {
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="w-full">
-                <RoomViewer3D 
-                  length={length}
-                  width={width}
-                  height={height}
-                  doorsCount={doors}
-                  windowsCount={windows}
-                  furniture={getFurniture3DList()}
-                />
+            </div>
+
+            {/* Photo Gallery thumbnails */}
+            {userPhotos.length > 0 && (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 px-1 custom-scrollbar">
+                {userPhotos.map((photo, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => { setSelectedPhotoIndex(idx); triggerRenderSimulation(); }}
+                    className={cn(
+                      "relative w-16 h-16 shrink-0 rounded-xl overflow-hidden border-2 transition-all",
+                      selectedPhotoIndex === idx ? "border-blue-500 shadow-md scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                    )}
+                  >
+                    <img src={photo.url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -449,7 +430,7 @@ export default function ResultsPage() {
               ].map((l) => (
                 <button
                   key={l.id}
-                  onClick={() => setRestylingLevel(l.id as any)}
+                  onClick={() => { setRestylingLevel(l.id as any); triggerRenderSimulation(); }}
                   className={cn(
                     "p-3 rounded-2xl border text-center transition-all flex flex-col justify-between min-h-[60px]",
                     restylingLevel === l.id 
@@ -462,44 +443,43 @@ export default function ResultsPage() {
                 </button>
               ))}
             </div>
+            <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
+              <label className="text-xs font-semibold text-foreground/80 mb-2 block">Istruzioni Personalizzate (Opzionale)</label>
+              <textarea 
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                placeholder="es. Aggiungi un vaso rosso sul tavolo, cambia il divano in pelle nera..."
+                className="w-full bg-background border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-20"
+              />
+            </div>
           </div>
 
-          {/* Existing Furniture Editor */}
+          {/* Style Directives Editor */}
           <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-900 pb-2">
               <h3 className="font-bold text-xs uppercase tracking-wider text-foreground/80">
-                Mobili Esistenti Rilevati
+                Direttive di Arredo
               </h3>
-              
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={reuseMax}
-                  onChange={(e) => setReuseMax(e.target.checked)}
-                  className="rounded text-blue-500 focus:ring-0 w-3.5 h-3.5"
-                />
-                <span className="text-[10px] font-bold text-blue-500 uppercase">Riusa il più possibile</span>
-              </label>
             </div>
 
             <div className="space-y-3">
-              {existingMobili.map((mob) => (
-                <div key={mob.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 bg-background border border-gray-200 dark:border-gray-800 rounded-xl">
-                  <span className="text-xs font-semibold text-foreground/90 truncate">{mob.name}</span>
+              {styleDirectives.map((dir) => (
+                <div key={dir.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 bg-background border border-gray-200 dark:border-gray-800 rounded-xl">
+                  <span className="text-xs font-semibold text-foreground/90 truncate">{dir.name}</span>
                   
                   <div className="flex gap-1.5 self-end sm:self-center">
                     {[
-                      { id: "keep", label: "Mantieni", color: "text-green-600 bg-green-500/10 border-green-500/30" },
-                      { id: "evaluate", label: "Valuta", color: "text-amber-600 bg-amber-500/10 border-amber-500/30" },
-                      { id: "replace", label: "Sostituisci", color: "text-red-600 bg-red-500/10 border-red-500/30" }
+                      { id: "add", label: "Aggiungi", color: "text-green-600 bg-green-500/10 border-green-500/30" },
+                      { id: "neutral", label: "Indifferente", color: "text-gray-500 bg-gray-500/10 border-gray-500/30" },
+                      { id: "avoid", label: "Evita", color: "text-red-600 bg-red-500/10 border-red-500/30" }
                     ].map((s) => (
                       <button
                         key={s.id}
                         type="button"
-                        onClick={() => toggleMobilStatus(mob.id, s.id as any)}
+                        onClick={() => toggleDirectiveStatus(dir.id, s.id as any)}
                         className={cn(
                           "px-2.5 py-1 rounded-lg text-[9px] font-bold border transition-all",
-                          mob.status === s.id 
+                          dir.status === s.id 
                             ? s.color 
                             : "bg-surface-hover/30 border-transparent text-foreground/50 hover:text-foreground"
                         )}
@@ -595,6 +575,37 @@ export default function ResultsPage() {
           ← Torna al workspace per caricare un altro progetto
         </Link>
       </div>
+
+      {/* Prompt Review Modal */}
+      {isReviewingPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-xl max-w-2xl w-full space-y-4">
+            <h3 className="font-bold text-lg text-foreground">Revisione Prompt AI</h3>
+            <p className="text-xs text-foreground/60">
+              Gemini ha analizzato la stanza e generato le seguenti istruzioni. Puoi ispezionarle e modificarle manualmente prima di inviarle al motore grafico per il render finale.
+            </p>
+            <textarea
+              value={draftPrompt}
+              onChange={(e) => setDraftPrompt(e.target.value)}
+              className="w-full h-48 bg-background border border-gray-200 dark:border-gray-700 rounded-xl p-4 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            />
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setIsReviewingPrompt(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-foreground/70 hover:bg-foreground/5 transition-colors"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={confirmGeneration}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors"
+              >
+                Conferma e Genera
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -1,0 +1,37 @@
+src/components/workspace/RoomViewer3D.tsx(484,44): error TS2339: Property 'object' does not exist on type '{}'.
+src/components/workspace/RoomViewer3D.tsx(486,43): error TS2339: Property 'object' does not exist on type '{}'.
+src/components/workspace/RoomViewer3D.tsx(486,71): error TS2339: Property 'object' does not exist on type '{}'.
+src/components/workspace/RoomViewer3D.tsx(486,99): error TS2339: Property 'object' does not exist on type '{}'.
+src/components/workspace/RoomViewer3D.tsx(487,43): error TS2339: Property 'object' does not exist on type '{}'.
+src/components/workspace/RoomViewer3D.tsx(487,71): error TS2339: Property 'object' does not exist on type '{}'.
+src/components/workspace/RoomViewer3D.tsx(487,99): error TS2339: Property 'object' does not exist on type '{}'.
+src/components/workspace/RoomViewer3D.tsx(488,40): error TS2339: Property 'object' does not exist on type '{}'.
+src/components/workspace/RoomViewer3D.tsx(488,65): error TS2339: Property 'object' does not exist on type '{}'.
+src/components/workspace/RoomViewer3D.tsx(488,90): error TS2339: Property 'object' does not exist on type '{}'.
+src/store/projectsStore.ts(3,10): error TS2459: Module '"./workspaceStore"' declares 'WorkspaceState' locally, but it is not exported.
+src/store/workspaceStore.ts(176,19): error TS7006: Parameter 'photos' implicitly has an 'any' type.
+src/store/workspaceStore.ts(177,23): error TS7006: Parameter 'dimensions' implicitly has an 'any' type.
+src/store/workspaceStore.ts(178,30): error TS7006: Parameter 'detectedFurniture' implicitly has an 'any' type.
+src/store/workspaceStore.ts(179,25): error TS7006: Parameter 'key' implicitly has an 'any' type.
+src/store/workspaceStore.ts(180,44): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/store/workspaceStore.ts(181,25): error TS7006: Parameter 'url' implicitly has an 'any' type.
+src/store/workspaceStore.ts(181,38): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/store/workspaceStore.ts(182,20): error TS7006: Parameter 'url' implicitly has an 'any' type.
+src/store/workspaceStore.ts(182,33): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/store/workspaceStore.ts(183,29): error TS7006: Parameter 'url' implicitly has an 'any' type.
+src/store/workspaceStore.ts(185,33): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/store/workspaceStore.ts(196,24): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/store/workspaceStore.ts(207,21): error TS7006: Parameter 'obj' implicitly has an 'any' type.
+src/store/workspaceStore.ts(207,34): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/store/workspaceStore.ts(211,24): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/store/workspaceStore.ts(211,28): error TS7006: Parameter 'updates' implicitly has an 'any' type.
+src/store/workspaceStore.ts(211,45): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/store/workspaceStore.ts(214,48): error TS7006: Parameter 'o' implicitly has an 'any' type.
+src/store/workspaceStore.ts(217,24): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/store/workspaceStore.ts(217,36): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/store/workspaceStore.ts(220,51): error TS7006: Parameter 'o' implicitly has an 'any' type.
+src/store/workspaceStore.ts(224,34): error TS7006: Parameter 'nodeName' implicitly has an 'any' type.
+src/store/workspaceStore.ts(224,44): error TS7006: Parameter 'updates' implicitly has an 'any' type.
+src/store/workspaceStore.ts(224,61): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/store/workspaceStore.ts(234,44): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/store/workspaceStore.ts(238,34): error TS7006: Parameter 'state' implicitly has an 'any' type.

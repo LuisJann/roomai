@@ -45,7 +45,12 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setMacPort(window.location.port || "3000");
-      setMacIp(window.location.hostname);
+      // Fetch the actual local IP address so the phone can connect
+      fetch("/api/ip").then(res => res.json()).then(data => {
+        setMacIp(data.ip);
+      }).catch(() => {
+        setMacIp(window.location.hostname);
+      });
     }
 
     const startSession = async () => {

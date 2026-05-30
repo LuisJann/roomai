@@ -1,65 +1,127 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowRight, Image as ImageIcon, Wand2 } from "lucide-react";
+import { motion, Variants } from "framer-motion";
+import { ArrowRight, Image as ImageIcon, Wand2, Smartphone, Box, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.1,
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 200, damping: 20 } }
+};
+
+const features = [
+  {
+    icon: Smartphone,
+    title: "Connessione Mobile",
+    description: "Scansiona un QR code col tuo iPhone e carica istantaneamente le foto dell'ambiente direttamente sul Mac.",
+    color: "text-blue-500",
+    bg: "bg-blue-500/10"
+  },
+  {
+    icon: Box,
+    title: "Editor 3D Spaziale",
+    description: "Posiziona porte, finestre e librerie 3D in un ambiente digitale millimetrico per progettare gli spazi esatti.",
+    color: "text-purple-500",
+    bg: "bg-purple-500/10"
+  },
+  {
+    icon: Sparkles,
+    title: "Intelligenza Artificiale",
+    description: "Usa l'AI generativa per creare decine di render iper-realistici partendo dalla tua stanza vuota o arredata.",
+    color: "text-orange-500",
+    bg: "bg-orange-500/10"
+  }
+];
+
 export function Hero() {
   return (
-    <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-hover border border-gray-200 dark:border-gray-800 text-sm font-medium mb-6">
-              <Wand2 className="w-4 h-4 text-blue-500" />
-              Il futuro dell'Interior Design
-            </span>
-            <h1 className="text-5xl md:text-7xl font-semibold tracking-tight mb-8 leading-tight">
-              Progetta la tua stanza, <br className="hidden md:block"/> partendo dalla <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-500 dark:from-white dark:to-gray-500">realtà.</span>
-            </h1>
-            <p className="text-lg md:text-xl text-foreground/70 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Carica le foto del tuo ambiente, inserisci le misure o allega una piantina disegnata a mano. 
-              La nostra intelligenza artificiale unirà questi dati per creare un render 3D millimetrico. <br/>
-              <span className="text-sm opacity-80 mt-2 block">💡 Usa un Mac? Acquisisci le foto in tempo reale direttamente con il tuo iPhone.</span>
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/workspace" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-foreground text-background px-8 py-4 rounded-full text-base font-medium hover:scale-105 transition-transform active:scale-95 shadow-lg">
-                <ImageIcon className="w-5 h-5" />
-                Crea il render 3D
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Demo Visual */}
+    <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden min-h-screen flex flex-col items-center justify-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        
         <motion.div 
-          className="mt-20 relative mx-auto max-w-5xl rounded-2xl overflow-hidden shadow-premium"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="text-center max-w-4xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
         >
-          <div className="aspect-[16/9] bg-gray-100 dark:bg-gray-800 relative">
-             <Image 
-                src="/modern_living_room_after.png" 
-                alt="3D Rendered Living Room" 
-                fill 
-                className="object-cover"
-                priority
-                unoptimized
-             />
-             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent mix-blend-overlay"></div>
-          </div>
+          <motion.div variants={itemVariants}>
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-hover border border-gray-200 dark:border-gray-800 text-sm font-medium mb-8 shadow-sm">
+              <Wand2 className="w-4 h-4 text-blue-500 animate-pulse" />
+              L'Interior Design Definitivo
+            </span>
+          </motion.div>
+          
+          <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl font-semibold tracking-tight mb-8 leading-[1.1]">
+            La tua stanza, <br className="hidden md:block"/> riprogettata dalla <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-500 dark:from-white dark:to-gray-500">realtà.</span>
+          </motion.h1>
+          
+          <motion.p variants={itemVariants} className="text-lg md:text-xl text-foreground/70 mb-12 max-w-2xl mx-auto leading-relaxed">
+            Dimentica i vecchi software complessi. Scatta una foto, costruisci l'ambiente in 3D con precisione millimetrica e lascia che l'Intelligenza Artificiale arredi lo spazio per te.
+          </motion.p>
+          
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href="/workspace/3d-editor" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-foreground text-background px-8 py-4 rounded-full text-base font-medium hover:scale-105 transition-all active:scale-95 shadow-xl shadow-foreground/10 group">
+              <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              Avvia l'App
+            </Link>
+          </motion.div>
+        </motion.div>
+
+        {/* Feature Cards Grid */}
+        <motion.div 
+          className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          {features.map((feature, i) => (
+            <motion.div 
+              key={i} 
+              variants={itemVariants}
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="bg-surface border border-gray-200 dark:border-gray-800 p-8 rounded-[2rem] shadow-sm hover:shadow-premium transition-all text-left"
+            >
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${feature.bg} ${feature.color}`}>
+                <feature.icon className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+              <p className="text-foreground/60 leading-relaxed text-sm">
+                {feature.description}
+              </p>
+            </motion.div>
+          ))}
         </motion.div>
       </div>
       
-      {/* Background decoration */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-gray-200 to-gray-50 dark:from-gray-900 dark:to-gray-800 rounded-full blur-3xl opacity-50 -z-10 pointer-events-none"></div>
+      {/* Liquid Background Decorations */}
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.1, 1],
+          rotate: [0, 90, 0],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-[100px] -z-10 pointer-events-none"
+      />
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.2, 1],
+          rotate: [0, -90, 0],
+        }}
+        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-[100px] -z-10 pointer-events-none"
+      />
     </section>
   );
 }

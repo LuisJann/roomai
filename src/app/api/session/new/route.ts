@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server";
 import os from "os";
+import { createSession } from "@/lib/sessionDb";
 
-// Keep sessions in memory, persisting across Next.js dev reloads
-const globalSessions = (global as any).sessions || {};
-(global as any).sessions = globalSessions;
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const sessionId = Math.random().toString(36).substring(2, 10).toUpperCase();
   
-  globalSessions[sessionId] = {
-    createdAt: Date.now(),
-    photos: []
-  };
+  createSession(sessionId);
 
   // Find the first IPv4 non-internal interface
   let macIp = "localhost";

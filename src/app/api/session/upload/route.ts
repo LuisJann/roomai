@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSession, addPhotoToSession } from "@/lib/sessionDb";
 
-const globalSessions = (global as any).sessions || {};
-(global as any).sessions = globalSessions;
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
   }
 
-  const session = globalSessions[sessionId];
+  const session = getSession(sessionId);
   if (!session) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
@@ -32,8 +32,7 @@ export async function POST(req: NextRequest) {
       size: size || "1.2 MB",
       uploadedAt: Date.now()
     };
-
-    session.photos.push(photo);
+    addPhotoToSession(sessionId, photo);
 
     return NextResponse.json({ success: true, photoId });
   } catch (error: any) {

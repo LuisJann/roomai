@@ -6,6 +6,7 @@ import { StepDimensions } from "@/components/workspace/wizard/StepDimensions";
 import { StepProcessing } from "@/components/workspace/wizard/StepProcessing";
 import { Camera, Ruler, Sparkles, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 
 export default function WorkspacePage() {
@@ -21,7 +22,12 @@ export default function WorkspacePage() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto py-6 space-y-8">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+      className="max-w-5xl mx-auto py-6 space-y-8"
+    >
       
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 dark:border-gray-900 pb-6 gap-4">
         <div>
@@ -62,31 +68,57 @@ export default function WorkspacePage() {
         </div>
       </div>
 
-      <div className="min-h-[400px]">
-        {step === 1 && (
-          <StepPhotos 
-            onNext={(uploadedPhotos) => {
-              setPhotos(uploadedPhotos);
-              setStep(2);
-            }} 
-          />
-        )}
+      <div className="min-h-[400px] relative">
+        <AnimatePresence mode="wait">
+          {step === 1 && (
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <StepPhotos 
+                onNext={(uploadedPhotos) => {
+                  setPhotos(uploadedPhotos);
+                  setStep(2);
+                }} 
+              />
+            </motion.div>
+          )}
 
-        {step === 2 && (
-          <StepDimensions 
-            onBack={() => setStep(1)}
-            onNext={(dims) => {
-              setDimensions(dims);
-              localStorage.setItem("roomai_dimensions", JSON.stringify(dims));
-              setStep(3);
-            }}
-          />
-        )}
+          {step === 2 && (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <StepDimensions 
+                onBack={() => setStep(1)}
+                onNext={(dims) => {
+                  setDimensions(dims);
+                  localStorage.setItem("roomai_dimensions", JSON.stringify(dims));
+                  setStep(3);
+                }}
+              />
+            </motion.div>
+          )}
 
-        {step === 3 && (
-          <StepProcessing />
-        )}
+          {step === 3 && (
+            <motion.div
+              key="step3"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <StepProcessing />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }

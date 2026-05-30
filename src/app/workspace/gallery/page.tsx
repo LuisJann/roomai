@@ -1,104 +1,138 @@
 "use client";
 
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useWorkspaceStore } from "@/store/workspaceStore";
+import { Download, ImageIcon, Images, Trash2, Loader2 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
-import { Sparkles, Eye, Download, Calendar } from "lucide-react";
 
 export default function GalleryPage() {
-  const renders = [
-    {
-      id: "soggiorno-moderno",
-      title: "Soggiorno Moderno",
-      style: "Modern Minimalist",
-      date: "Oggi",
-      image: "/modern_living_room_after.png",
-      href: "/workspace/results"
+  const [renders, setRenders] = useState<any[]>([]);
+  const [inspirations, setInspirations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [canSeeRenders, setCanSeeRenders] = useState(false);
+  const [canSeeInspirations, setCanSeeInspirations] = useState(false);
+
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    fetchImages();
+  }, []);
+
+  const fetchImages = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setLoading(false);
+      return;
     }
-  ];
+
+    const { data: roleData } = await supabase.from('users_roles').select('role, permissions').eq('id', user.id).single();
+    const isAdmin = roleData?.role === 'admin';
+    const perms = roleData?.permissions || {};
+    
+    setCanSeeRenders(isAdmin || perms.canAccessModificaAI);
+    setCanSeeInspirations(isAdmin || perms.canAccessIspirazione);
+
+    const { data, error } = await supabase.from('user_images').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+    
+    if (data && !error) {
+      setRenders(data.filter(img => img.type === 'render'));
+      setInspirations(data.filter(img => img.type === 'inspiration'));
+    }
+    setLoading(false);
+  };
+
+  const deleteImage = async (id: string, storagePath: string) => {
+    if (!confirm("Sei sicuro di voler eliminare questa immagine?")) return;
+    
+    // Optimistic UI update
+    setRenders(renders.filter(r => r.id !== id));
+    setInspirations(inspirations.filter(i => i.id !== id));
+
+    await supabase.storage.from('gallery').remove([storagePath]);
+    await supabase.from('user_images').delete().eq('id', id);
+  };
 
   return (
-    <div className="max-w-6xl mx-auto py-6 space-y-8">
+    <div className="max-w-6xl mx-auto py-8 space-y-12 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">I Miei Render 3D</h1>
-        <p className="text-xs text-foreground/50 mt-1">
-          Visualizza e scarica i render 3D generati dall'AI per le tue stanze. I dati sono salvati localmente sul tuo browser.
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+          <Images className="w-8 h-8 text-blue-500" /> I Miei Render e Ispirazioni
+        </h1>
+        <p className="text-foreground/60 mt-2">
+          Qui trovi tutto il materiale generato in background e salvato nel Database.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {renders.map((render) => (
-          <div 
-            key={render.id} 
-            className="group bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
-          >
-            {/* Image container */}
-            <div className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-900 overflow-hidden">
-              <Image 
-                src={render.image} 
-                alt={render.title} 
-                fill 
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                unoptimized
-              />
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                <Link 
-                  href={render.href}
-                  className="bg-white text-gray-900 p-3 rounded-full shadow hover:scale-110 active:scale-95 transition-transform"
-                  title="Visualizza Dettagli"
-                >
-                  <Eye className="w-5 h-5" />
-                </Link>
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>
+      ) : (
+        <>
+          {canSeeRenders && (
+          <section>
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-indigo-500" /> Render Reali (Strutturali)
+            </h2>
+            {renders.length === 0 ? (
+              <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center text-foreground/50">
+                Non hai ancora salvato nessun render reale.
               </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-5 flex-1 flex flex-col justify-between">
-              <div>
-                <span className="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                  {render.style}
-                </span>
-                <h3 className="font-bold text-base mt-2.5 text-foreground/90">{render.title}</h3>
-                
-                <div className="flex items-center gap-1.5 text-[11px] text-foreground/40 mt-1.5">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>Creato: {render.date}</span>
-                </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {renders.map((img) => (
+                  <div key={img.id} className="bg-surface rounded-2xl overflow-hidden shadow-sm border border-border flex flex-col">
+                    <div className="relative w-full h-64">
+                      <Image src={img.public_url} alt="Render" fill className="object-cover" unoptimized />
+                    </div>
+                    <div className="p-3 flex gap-2">
+                      <a href={img.public_url} download target="_blank" rel="noreferrer" className="flex-1 bg-secondary text-foreground text-center py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 hover:bg-secondary/80 transition-colors">
+                        <Download className="w-3.5 h-3.5 shrink-0" /> Scarica
+                      </a>
+                      <button onClick={() => deleteImage(img.id, img.storage_path)} className="flex-1 bg-red-500/10 text-red-500 py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 hover:bg-red-500/20 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5 shrink-0" /> Elimina
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
+            )}
+          </section>
+          )}
 
-              <div className="flex gap-2.5 mt-6 border-t border-gray-100 dark:border-gray-900 pt-4">
-                <Link 
-                  href={render.href}
-                  className="flex-1 text-center bg-foreground text-background py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity"
-                >
-                  Apri Progetto
-                </Link>
-                <a 
-                  href={render.image} 
-                  download 
-                  className="bg-surface border border-gray-200 dark:border-gray-800 text-foreground p-2 rounded-xl hover:bg-surface-hover transition-colors flex items-center justify-center"
-                  title="Scarica HD"
-                >
-                  <Download className="w-4 h-4" />
-                </a>
+          {canSeeInspirations && (
+          <section>
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-yellow-500" /> Ispirazioni (Text-to-Image)
+            </h2>
+            {inspirations.length === 0 ? (
+              <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center text-foreground/50">
+                Nessuna ispirazione salvata.
               </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Create new room card */}
-        <Link 
-          href="/workspace" 
-          className="border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 rounded-3xl p-8 flex flex-col items-center justify-center text-center min-h-[300px] bg-surface-hover/10 hover:bg-surface-hover/30 transition-all group"
-        >
-          <div className="w-12 h-12 rounded-full bg-surface border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Sparkles className="w-5 h-5 text-blue-500" />
-          </div>
-          <h3 className="font-semibold text-sm mb-1">Nuovo Progetto Stanza</h3>
-          <p className="text-xs text-foreground/50 max-w-xs">
-            Aggiungi foto e misure di una nuova stanza per generare un altro render 3D personalizzato.
-          </p>
-        </Link>
-      </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {inspirations.map((img) => (
+                  <div key={img.id} className="bg-surface rounded-2xl overflow-hidden shadow-sm border border-border flex flex-col">
+                    <div className="relative w-full h-64">
+                      <Image src={img.public_url} alt="Inspiration" fill className="object-cover" unoptimized />
+                    </div>
+                    <div className="p-3 flex gap-2">
+                      <a href={img.public_url} download target="_blank" rel="noreferrer" className="flex-1 bg-secondary text-foreground text-center py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 hover:bg-secondary/80 transition-colors">
+                        <Download className="w-3.5 h-3.5 shrink-0" /> Scarica
+                      </a>
+                      <button onClick={() => deleteImage(img.id, img.storage_path)} className="flex-1 bg-red-500/10 text-red-500 py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 hover:bg-red-500/20 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5 shrink-0" /> Elimina
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+          )}
+        </>
+      )}
     </div>
   );
 }

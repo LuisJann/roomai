@@ -17,10 +17,15 @@ const steps = [
   { id: 6, title: "Generazione proposta arredamento", icon: Sparkles, detail: "Disposizione mobili intelligenti basata sul tipo stanza." },
 ];
 
+import { useWorkspaceStore } from "@/store/workspaceStore";
+
 export function StepProcessing() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [percentage, setPercentage] = useState(0);
+
+  const dimensions = useWorkspaceStore(state => state.dimensions);
+  const setDetectedFurniture = useWorkspaceStore(state => state.setDetectedFurniture);
 
   useEffect(() => {
     // Total duration of simulation: ~10 seconds
@@ -29,6 +34,44 @@ export function StepProcessing() {
       setCurrentStep(prev => {
         if (prev >= steps.length) {
           clearInterval(interval);
+          
+          // Generate Dynamic Furniture
+          const roomType = dimensions?.roomType || "soggiorno";
+          let generatedFurniture: any[] = [];
+          if (roomType === "soggiorno") {
+             generatedFurniture = [
+                { id: "m1", name: "Divano 3 posti grigio", type: "divano", status: "keep" },
+                { id: "m2", name: "Tavolo da pranzo in legno", type: "tavolo", status: "evaluate" },
+                { id: "m3", name: "Mobile TV basso", type: "mobile-tv", status: "replace" },
+                { id: "m4", name: "Libreria a parete bianca", type: "libreria", status: "keep" },
+             ];
+          } else if (roomType === "camera") {
+             generatedFurniture = [
+                { id: "c1", name: "Letto matrimoniale imbottito", type: "letto", status: "keep" },
+                { id: "c2", name: "Armadio a 6 ante", type: "armadio", status: "replace" },
+                { id: "c3", name: "Comodino in legno", type: "comodino", status: "evaluate" }
+             ];
+          } else if (roomType === "cucina") {
+             generatedFurniture = [
+                { id: "k1", name: "Isola centrale in marmo", type: "isola", status: "keep" },
+                { id: "k2", name: "Pensili laminati opachi", type: "pensili", status: "replace" },
+                { id: "k3", name: "Tavolo snack e sgabelli", type: "tavolo", status: "evaluate" }
+             ];
+          } else if (roomType === "bagno") {
+             generatedFurniture = [
+                { id: "b1", name: "Mobile lavabo doppio", type: "lavabo", status: "keep" },
+                { id: "b2", name: "Box doccia angolare", type: "doccia", status: "evaluate" },
+                { id: "b3", name: "Specchiera da parete", type: "specchio", status: "replace" }
+             ];
+          } else {
+             generatedFurniture = [
+                { id: "s1", name: "Scrivania direzionale", type: "scrivania", status: "keep" },
+                { id: "s2", name: "Libreria in metallo", type: "libreria", status: "replace" },
+                { id: "s3", name: "Poltrona ergonomica", type: "sedia", status: "keep" }
+             ];
+          }
+          setDetectedFurniture(generatedFurniture);
+
           setTimeout(() => {
             router.push("/workspace/results");
           }, 800);

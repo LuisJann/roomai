@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
+import ToastContainer from "@/components/layout/ToastContainer";
+
+const outfit = Outfit({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 const inter = Inter({
   variable: "--font-sans",
@@ -21,9 +28,10 @@ export default function RootLayout({
   return (
     <html
       lang="it"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${inter.variable} ${outfit.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col font-sans bg-background text-foreground transition-colors duration-300">
+      <body className="h-full flex flex-col font-sans bg-background text-foreground transition-colors duration-300">
+        <ToastContainer />
         {children}
       </body>
     </html>

@@ -52,46 +52,68 @@ function MobileUploadInner() {
     const file = e.target.files[0];
     
     try {
-      // Convert to base64
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Data = reader.result as string;
-        
-        const sizeMB = (file.size / (1024 * 1024)).toFixed(1) + " MB";
-        
-        const response = await fetch(`/api/session/upload?sessionId=${sessionId}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            image: base64Data,
-            name: file.name || `photo-${Date.now()}.jpg`,
-            size: sizeMB,
-          }),
+      // Compress image before sending to avoid Next.js payload limits and speed up local network
+      const compressImage = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const img = new window.Image();
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const MAX_WIDTH = 1920;
+              let width = img.width;
+              let height = img.height;
+
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d");
+              ctx?.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL("image/jpeg", 0.7)); // 70% quality JPEG
+            };
+            img.onerror = reject;
+            img.src = ev.target?.result as string;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
         });
-
-        if (response.ok) {
-          setStatus("success");
-          const resData = await response.json();
-          setUploadedPhotos(prev => [
-            { id: resData.photoId, name: file.name, url: base64Data },
-            ...prev
-          ]);
-          // Reset file input
-          if (fileInputRef.current) fileInputRef.current.value = "";
-          setTimeout(() => setStatus("idle"), 2500);
-        } else {
-          const errData = await response.json();
-          throw new Error(errData.error || "Impossibile caricare il file");
-        }
       };
 
-      reader.onerror = () => {
-        throw new Error("Errore durante la lettura del file.");
-      };
+      const base64Data = await compressImage(file);
+      
+      // Calculate new size (approx)
+      const sizeMB = (base64Data.length * 0.75 / (1024 * 1024)).toFixed(1) + " MB";
+      
+      const response = await fetch(`/api/session/upload?sessionId=${sessionId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          image: base64Data,
+          name: file.name || `photo-${Date.now()}.jpg`,
+          size: sizeMB,
+        }),
+      });
 
-      reader.readAsDataURL(file);
+      if (response.ok) {
+        setStatus("success");
+        const resData = await response.json();
+        setUploadedPhotos(prev => [
+          { id: resData.photoId, name: file.name, url: base64Data },
+          ...prev
+        ]);
+        // Reset file input
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        setTimeout(() => setStatus("idle"), 2500);
+      } else {
+        const errData = await response.json();
+        throw new Error(errData.error || "Impossibile caricare il file");
+      }
       
     } catch (err: any) {
       setStatus("error");
@@ -138,13 +160,12 @@ function MobileUploadInner() {
             Premi il bottone qui sotto per avviare la fotocamera del tuo iPhone. Le foto caricate compariranno istantaneamente sul tuo Mac.
           </p>
 
-          <div className="flex flex-col items-center justify-center">
-            <label
-              htmlFor="mobile-photo-input"
-              className="w-20 h-20 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center shadow-lg active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+          <div className="flex flex-col items-center justify-center relative">
+            <div
+              className="w-20 h-20 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg transition-all"
             >
               <Camera className="w-8 h-8" />
-            </label>
+            </div>
             <span className="text-xs font-bold text-blue-500 mt-3 uppercase tracking-wider">
               {status === "uploading" ? "Invio in corso..." : "Avvia Fotocamera"}
             </span>
@@ -155,15 +176,16 @@ function MobileUploadInner() {
               </p>
             )}
 
-            {/* Native capture input */}
+            {/* Native capture input - Absolute overlay to guarantee click on iOS */}
             <input
               id="mobile-photo-input"
               type="file"
               ref={fileInputRef}
               onChange={handleCapture}
-              accept="image/*"
+              accept="image/jpeg, image/png, image/jpg"
               capture="environment"
-              className="sr-only"
+              disabled={status === "uploading"}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
             />
           </div>
 
