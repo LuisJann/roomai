@@ -1280,108 +1280,108 @@ export default function Editor3DPage() {
                     {/* Preview 2D della stanza */}
                     <RoomPreview2D config={dialog.customRoomConfig} />
 
-                    <div className="flex items-center gap-3 mt-2">
-                      <label className="w-24 text-xs font-bold text-foreground/70">Larghezza (X)</label>
+                    <div className="flex items-center gap-2 sm:gap-3 mt-2">
+                      <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Larghezza (X)</label>
                       <input 
                         type="number" step="0.1"
                         value={dialog.customRoomConfig.width}
                         onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, width: e.target.value } }))}
-                        className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                        className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                       />
-                      <span className="text-xs text-foreground/50 w-4">m</span>
+                      <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <label className="w-24 text-xs font-bold text-foreground/70">Profondità (Z)</label>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Profondità (Z)</label>
                       <input 
                         type="number" step="0.1"
                         value={dialog.customRoomConfig.length}
                         onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, length: e.target.value } }))}
-                        className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                        className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                       />
-                      <span className="text-xs text-foreground/50 w-4">m</span>
+                      <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
                     </div>
 
                     {dialog.customRoomConfig?.shape === 'l-shape' && (
                       <>
-                        <div className="flex items-center gap-3">
-                          <label className="w-24 text-xs font-bold text-foreground/70">Largh. Nicchia</label>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Largh. Nicchia</label>
                           <input 
                             type="number" step="0.1"
                             value={dialog.customRoomConfig.wingWidth}
                             onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, wingWidth: e.target.value } }))}
-                            className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                            className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                           />
-                          <span className="text-xs text-foreground/50 w-4">m</span>
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <label className="w-24 text-xs font-bold text-foreground/70">Prof. Nicchia</label>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Prof. Nicchia</label>
                           <input 
                             type="number" step="0.1"
                             value={dialog.customRoomConfig.wingLength}
                             onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, wingLength: e.target.value } }))}
-                            className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                            className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                           />
-                          <span className="text-xs text-foreground/50 w-4">m</span>
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
                         </div>
                       </>
                     )}
 
                     {dialog.customRoomConfig?.shape === 'chamfered' && (
-                      <div className="flex items-center gap-3">
-                        <label className="w-24 text-xs font-bold text-foreground/70">Taglio Angolo</label>
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Taglio Angolo</label>
                         <input 
                           type="number" step="0.1"
                           value={dialog.customRoomConfig.chamferSize}
                           onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, chamferSize: e.target.value } }))}
-                          className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                          className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                         />
-                        <span className="text-xs text-foreground/50 w-4">m</span>
+                        <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3">
-                      <label className="w-24 text-xs font-bold text-foreground/70">Altezza (Y)</label>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Altezza (Y)</label>
                       <input 
                         type="number" step="0.1"
                         value={dialog.customRoomConfig.height}
                         onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, height: e.target.value } }))}
-                        className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                        className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                       />
-                      <span className="text-xs text-foreground/50 w-4">m</span>
+                      <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
                     </div>
 
                     {dialog.customRoomConfig?.shape === 'attic' && (
-                      <div className="flex items-center gap-3">
-                        <label className="w-24 text-xs font-bold text-foreground/70">Ginocchiello</label>
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Ginocchiello</label>
                         <input 
                           type="number" step="0.1"
                           value={dialog.customRoomConfig.kneeHeight}
                           onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, kneeHeight: e.target.value } }))}
-                          className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                          className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                         />
-                        <span className="text-xs text-foreground/50 w-4">m</span>
+                        <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3">
-                      <label className="w-24 text-xs font-bold text-foreground/70">Porte</label>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Porte</label>
                       <input 
                         type="number" step="1" min="0"
                         value={dialog.customRoomConfig.doorsCount}
                         onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, doorsCount: e.target.value } }))}
-                        className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                        className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                       />
-                      <span className="text-xs text-foreground/50 w-4">num</span>
+                      <span className="text-xs text-foreground/50 w-6 shrink-0">num</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <label className="w-24 text-xs font-bold text-foreground/70">Finestre</label>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Finestre</label>
                       <input 
                         type="number" step="1" min="0"
                         value={dialog.customRoomConfig.windowsCount}
                         onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, windowsCount: e.target.value } }))}
-                        className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                        className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                       />
-                      <span className="text-xs text-foreground/50 w-4">num</span>
+                      <span className="text-xs text-foreground/50 w-6 shrink-0">num</span>
                     </div>
                   </div>
                 )}
