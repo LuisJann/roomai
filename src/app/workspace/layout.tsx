@@ -107,12 +107,12 @@ export default function WorkspaceLayout({
           </div>
         )}
 
-        <div className={`md:hidden fixed z-[60] flex justify-end ${isEditor ? "top-[5px] right-3" : "top-6 right-6"}`}>
+        <div className={`md:hidden fixed z-[60] flex justify-end ${isEditor ? "top-[9px] right-4" : "top-6 right-6"}`}>
           <motion.div
             animate={{
-              width: isMobileOpen ? 280 : (isEditor ? 40 : 56),
-              height: isMobileOpen ? menuHeight : (isEditor ? 40 : 56),
-              borderRadius: isMobileOpen ? 24 : 28,
+              width: isMobileOpen ? 280 : (isEditor ? 34 : 56),
+              height: isMobileOpen ? menuHeight : (isEditor ? 34 : 56),
+              borderRadius: isMobileOpen ? 24 : (isEditor ? 10 : 28),
             }}
             transition={{
               type: "spring",
@@ -120,9 +120,19 @@ export default function WorkspaceLayout({
               damping: 26,
               mass: 0.8,
             }}
-            className="glass-panel !bg-black/60 !border-white/20 shadow-[0_16px_60px_rgba(0,0,0,0.8)] overflow-hidden cursor-pointer pointer-events-auto"
+            className={cn(
+              "overflow-hidden cursor-pointer pointer-events-auto",
+              (!isEditor || isMobileOpen) 
+                ? "glass-panel !bg-black/60 !border-white/20 shadow-[0_16px_60px_rgba(0,0,0,0.8)]" 
+                : "glass-button flex items-center justify-center border border-white/10 bg-white/5 hover:bg-white/10"
+            )}
             style={{ maxWidth: 'calc(100vw - 32px)', originX: 1, originY: 0 }}
-            onClick={() => { if (!isMobileOpen) setIsMobileOpen(true); }}
+            onClick={() => { 
+              if (!isMobileOpen) {
+                setIsMobileOpen(true);
+                window.dispatchEvent(new CustomEvent('mobile-menu-opened'));
+              }
+            }}
           >
             {/* FAB Icon */}
             <AnimatePresence>
@@ -134,7 +144,7 @@ export default function WorkspaceLayout({
                   transition={{ duration: 0.15 }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
-                  <Menu className={`${isEditor ? "w-5 h-5" : "w-6 h-6"} text-white`} />
+                  <Menu className={`${isEditor ? "w-4 h-4" : "w-6 h-6"} text-white`} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -177,7 +187,7 @@ export default function WorkspaceLayout({
       
       <main className={cn(
         "flex-1 flex flex-col min-h-0",
-        isEditor ? "p-0 overflow-hidden md:pl-72" : "pt-24 p-4 md:py-6 md:pr-6 md:pl-72 overflow-y-auto"
+        isEditor ? "p-0 overflow-hidden md:pl-72" : "px-4 pb-4 pt-24 md:py-6 md:pr-6 md:pl-72 overflow-y-auto"
       )}>
         {children}
       </main>

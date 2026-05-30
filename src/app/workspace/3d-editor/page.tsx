@@ -596,6 +596,15 @@ export default function Editor3DPage() {
 
   const addNotification = useWorkspaceStore(state => state.addNotification);
 
+  useEffect(() => {
+    // Listener for global mobile menu
+    const handleMobileMenuOpen = () => {
+      setSelectedObjectId(null);
+    };
+    window.addEventListener('mobile-menu-opened', handleMobileMenuOpen);
+    return () => window.removeEventListener('mobile-menu-opened', handleMobileMenuOpen);
+  }, [setSelectedObjectId]);
+
   // Custom Dialog State
   const [dialog, setDialog] = useState<{
     isOpen: boolean;
@@ -729,17 +738,23 @@ export default function Editor3DPage() {
           </div>
           <div className="w-px h-4 bg-white/10" />
           <button 
-            onClick={() => setDialog({ isOpen: true, type: 'tutorial', title: 'Guida all\'Editor 3D', message: 'Scopri come utilizzare tutti gli strumenti a tua disposizione per creare la tua stanza perfetta.' })}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 transition-colors border border-blue-500/20"
+            onClick={() => {
+              setSelectedObjectId(null);
+              setDialog({ isOpen: true, type: 'tutorial', title: 'Guida all\'Editor 3D', message: 'Scopri come utilizzare tutti gli strumenti a tua disposizione per creare la tua stanza perfetta.' });
+            }}
+            className="flex items-center justify-center gap-1.5 w-7 h-7 sm:w-auto sm:px-2.5 sm:py-1.5 rounded-lg text-[10px] font-semibold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 transition-colors border border-blue-500/20 shrink-0"
           >
-            <HelpCircle className="w-3 h-3" /> Tutorial
+            <HelpCircle className="w-3 h-3" /> <span className="hidden sm:inline">Tutorial</span>
           </button>
         </div>
         
         {/* Right actions */}
-        <div className="flex items-center gap-2 pr-14 md:pr-0">
+        <div className="flex items-center gap-2 md:pr-0">
           <button 
-            onClick={handleNewProject} 
+            onClick={() => {
+              setSelectedObjectId(null);
+              handleNewProject();
+            }} 
             className="hidden md:flex items-center gap-2 px-4 py-2 glass-button hover:bg-white/10 text-[11px] font-bold text-white transition-all rounded-xl"
           >
             <Plus className="w-3.5 h-3.5" /> Nuovo
@@ -747,17 +762,20 @@ export default function Editor3DPage() {
           <button 
             onClick={undo} 
             disabled={historyLength === 0} 
-            className="flex items-center gap-2 px-4 py-2 glass-button hover:bg-white/10 text-[11px] font-bold text-white disabled:opacity-30 disabled:pointer-events-none transition-all rounded-xl"
+            className="flex items-center justify-center gap-1.5 sm:gap-2 w-9 sm:w-auto px-0 sm:px-4 py-2 glass-button hover:bg-white/10 text-[11px] font-bold text-white disabled:opacity-30 disabled:pointer-events-none transition-all rounded-xl"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Annulla
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Annulla</span>
           </button>
           <button 
             onClick={handleSaveProject} 
-            className="flex items-center gap-2 px-5 py-2 bg-white text-black hover:bg-gray-100 shadow-glow transition-all active:scale-95 anim-spring rounded-xl text-[11px] font-bold"
+            className="flex items-center justify-center gap-1.5 sm:gap-2 w-9 sm:w-auto px-0 sm:px-5 py-2 bg-white text-black hover:bg-gray-100 shadow-glow transition-all active:scale-95 anim-spring rounded-xl text-[11px] font-bold"
           >
             <Save className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">{loadedProjectOwner ? 'Duplica' : 'Salva'}</span>
           </button>
+          {/* Placeholder to reserve space for the fixed hamburger menu on mobile */}
+          <div className="w-[34px] md:hidden shrink-0" />
         </div>
       </div>
 
@@ -778,10 +796,11 @@ export default function Editor3DPage() {
               damping: 26,
               mass: 0.8,
             }}
-            className="bg-surface/90 backdrop-blur-3xl border border-white/10 dark:border-white/5 shadow-premium overflow-hidden cursor-pointer"
+            className="glass-panel !bg-[#0A0A0B]/90 backdrop-blur-3xl border border-white/10 shadow-[0_16px_60px_rgba(0,0,0,0.8)] overflow-hidden cursor-pointer"
             style={{ originX: 0, originY: 0 }}
             onClick={() => { 
               if (!isObjectsMenuOpen) { 
+                setSelectedObjectId(null);
                 setIsObjectsMenuOpen(true); 
                 setIsMobileMenuOpen(false); 
               } 
@@ -847,10 +866,11 @@ export default function Editor3DPage() {
               damping: 26,
               mass: 0.8,
             }}
-            className="bg-surface/90 backdrop-blur-3xl border border-white/10 dark:border-white/5 shadow-premium overflow-hidden cursor-pointer"
+            className="glass-panel !bg-[#0A0A0B]/90 backdrop-blur-3xl border border-white/10 shadow-[0_16px_60px_rgba(0,0,0,0.8)] overflow-hidden cursor-pointer"
             style={{ originX: 1, originY: 0 }}
             onClick={() => { 
               if (!isMobileMenuOpen) { 
+                setSelectedObjectId(null);
                 setIsMobileMenuOpen(true); 
                 setIsObjectsMenuOpen(false); 
               } 
@@ -951,7 +971,10 @@ export default function Editor3DPage() {
 
                 {/* Toolbar Buttons */}
                 <button 
-                  onClick={handleNewProject} 
+                  onClick={() => {
+                    setSelectedObjectId(null);
+                    handleNewProject();
+                  }} 
                   className="flex md:hidden shrink-0 min-w-[80px] glass-button py-2.5 text-[10px] font-bold items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap hover:text-white"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -959,7 +982,7 @@ export default function Editor3DPage() {
                 </button>
 
                 {/* 1. Carica Stanza */}
-                <label className="flex-1 shrink-0 min-w-[90px] bg-white text-black py-2.5 rounded-full text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-glow whitespace-nowrap anim-spring">
+                <label className="flex-1 shrink-0 min-w-[90px] bg-white text-black py-2.5 rounded-full text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-glow whitespace-nowrap anim-spring" onClick={() => setSelectedObjectId(null)}>
                   <Upload className="w-3.5 h-3.5" />
                   <span>Carica</span>
                   <input type="file" accept=".glb,.gltf,.obj" className="hidden" onChange={handleGLBUpload} />
@@ -967,45 +990,48 @@ export default function Editor3DPage() {
 
                 {/* 2. Crea Stanza */}
                 <button 
-                  onClick={() => setDialog({ 
-                    isOpen: true, 
-                    type: 'custom_room', 
-                    title: 'Crea Stanza Manuale', 
-                    message: 'Inserisci le dimensioni in metri per generare una stanza procedurale (pavimento + 4 pareti).',
-                    customRoomConfig: { width: '4', length: '5', height: '2.8', doorsCount: '1', windowsCount: '1' },
-                    onConfirm: (config) => {
-                      const w = parseFloat(config.width) || 4;
-                      const l = parseFloat(config.length) || 5;
-                      const h = parseFloat(config.height) || 2.8;
-                      const d = parseInt(config.doorsCount) || 0;
-                      const wind = parseInt(config.windowsCount) || 0;
-                      
-                      const store = useWorkspaceStore.getState();
-                      store.setCustomRoomConfig({ width: w, length: l, height: h, doorsCount: d, windowsCount: wind });
-                      
-                      for(let i=0; i<d; i++) {
-                        store.add3DObject({
-                          id: `door_${Date.now()}_${i}`,
-                          type: 'door',
-                          position: [w/2, 0, 0],
-                          rotation: [0, Math.PI / 2, 0],
-                          scale: [1, 1, 1]
-                        });
-                      }
-                      for(let i=0; i<wind; i++) {
-                        store.add3DObject({
-                          id: `window_${Date.now()}_${i}`,
-                          type: 'window',
-                          position: [0, 1.0, -l/2],
-                          rotation: [0, 0, 0],
-                          scale: [1, 1, 1]
-                        });
-                      }
+                  onClick={() => {
+                    setSelectedObjectId(null);
+                    setDialog({ 
+                      isOpen: true, 
+                      type: 'custom_room', 
+                      title: 'Crea Stanza Manuale', 
+                      message: 'Inserisci le dimensioni in metri per generare una stanza procedurale (pavimento + 4 pareti).',
+                      customRoomConfig: { width: '4', length: '5', height: '2.8', doorsCount: '1', windowsCount: '1' },
+                      onConfirm: (config) => {
+                        const w = parseFloat(config.width) || 4;
+                        const l = parseFloat(config.length) || 5;
+                        const h = parseFloat(config.height) || 2.8;
+                        const d = parseInt(config.doorsCount) || 0;
+                        const wind = parseInt(config.windowsCount) || 0;
+                        
+                        const store = useWorkspaceStore.getState();
+                        store.setCustomRoomConfig({ width: w, length: l, height: h, doorsCount: d, windowsCount: wind });
+                        
+                        for(let i=0; i<d; i++) {
+                          store.add3DObject({
+                            id: `door_${Date.now()}_${i}`,
+                            type: 'door',
+                            position: [w/2, 0, 0],
+                            rotation: [0, Math.PI / 2, 0],
+                            scale: [1, 1, 1]
+                          });
+                        }
+                        for(let i=0; i<wind; i++) {
+                          store.add3DObject({
+                            id: `window_${Date.now()}_${i}`,
+                            type: 'window',
+                            position: [0, 1.0, -l/2],
+                            rotation: [0, 0, 0],
+                            scale: [1, 1, 1]
+                          });
+                        }
 
-                      setDialog(prev => ({...prev, isOpen: false}));
-                    },
-                    onCancel: () => setDialog(prev => ({...prev, isOpen: false}))
-                  })}
+                        setDialog(prev => ({...prev, isOpen: false}));
+                      },
+                      onCancel: () => setDialog(prev => ({...prev, isOpen: false}))
+                    })
+                  }}
                   className="flex-1 shrink-0 min-w-[90px] glass-button py-2.5 text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap hover:text-emerald-400"
                 >
                   <Boxes className="w-3.5 h-3.5" />
@@ -1013,7 +1039,7 @@ export default function Editor3DPage() {
                 </button>
 
                 {/* 3. Mobili */}
-                <label className="flex-1 shrink-0 min-w-[80px] glass-button py-2.5 text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap hover:text-blue-400">
+                <label className="flex-1 shrink-0 min-w-[80px] glass-button py-2.5 text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap hover:text-blue-400" onClick={() => setSelectedObjectId(null)}>
                   <Plus className="w-3.5 h-3.5 text-blue-400" />
                   <span>Mobili</span>
                   <input type="file" accept=".glb,.gltf,.obj" className="hidden" onChange={handleExternal3DUpload} />
@@ -1022,6 +1048,7 @@ export default function Editor3DPage() {
                 {/* 4. Luce */}
                 <button 
                   onClick={() => {
+                    setSelectedObjectId(null);
                     const objectId = `light_${Date.now()}`;
                     add3DObject({
                       id: objectId,
@@ -1040,7 +1067,10 @@ export default function Editor3DPage() {
 
                 {/* 6. App Scanner */}
                 <button 
-                  onClick={() => setDialog({ isOpen: true, type: 'alert', title: 'Scanner 3D Gratuito 📱', message: 'Per creare un modello 3D perfetto della tua stanza (gratis), ti consigliamo di usare l\'app "Polycam" o "RealityScan" sul tuo telefono. \n\n1. Scansiona la stanza con l\'app.\n2. Esporta il modello in formato .GLB.\n3. Caricalo qui cliccando il tasto blu "Carica".', onConfirm: () => setDialog(prev => ({...prev, isOpen: false})), onCancel: () => setDialog(prev => ({...prev, isOpen: false})) })}
+                  onClick={() => {
+                    setSelectedObjectId(null);
+                    setDialog({ isOpen: true, type: 'alert', title: 'Scanner 3D Gratuito 📱', message: 'Per creare un modello 3D perfetto della tua stanza (gratis), ti consigliamo di usare l\'app "Polycam" o "RealityScan" sul tuo telefono. \n\n1. Scansiona la stanza con l\'app.\n2. Esporta il modello in formato .GLB.\n3. Caricalo qui cliccando il tasto blu "Carica".', onConfirm: () => setDialog(prev => ({...prev, isOpen: false})), onCancel: () => setDialog(prev => ({...prev, isOpen: false})) });
+                  }}
                   className="flex-1 shrink-0 min-w-[90px] glass-button py-2.5 text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap hover:text-purple-400 rounded-full anim-spring hover:scale-105 active:scale-95"
                 >
                   <Smartphone className="w-3.5 h-3.5" />
@@ -1227,7 +1257,7 @@ export default function Editor3DPage() {
 
       {/* UNIVERSAL FAB MENU (Rendered globally on top of everything) */}
       {isAnythingSelected && (
-        <div className="fixed right-4 bottom-[220px] md:right-8 md:bottom-[120px] z-[9999] flex flex-col gap-2 items-end pointer-events-none">
+        <div className="fixed right-4 bottom-[220px] md:right-8 md:bottom-6 z-40 flex flex-col gap-2 items-end pointer-events-none">
           <AnimatePresence>
             {isMobileMenuExpanded && (
               <motion.div 

@@ -206,7 +206,7 @@ export function Sidebar({ isOpen, onClose, isMobileMenu }: SidebarProps) {
   return (
     <>
       {/* Desktop Fixed Sidebar */}
-      <div className="hidden md:block fixed left-0 top-0 h-screen z-30 w-72">
+      <div className="hidden md:block fixed left-0 top-0 h-[100dvh] z-30 w-72">
         {SidebarContent}
       </div>
     </>
