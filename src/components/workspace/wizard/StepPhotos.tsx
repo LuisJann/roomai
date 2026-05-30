@@ -367,8 +367,8 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
               }
             }}
             className={cn(
-              "border-2 border-dashed rounded-2xl p-10 text-center transition-all flex flex-col items-center justify-center min-h-[220px]",
-              isDragging ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20" : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-surface-hover/30"
+              "border border-dashed border-white/20 rounded-[32px] p-10 text-center transition-all flex flex-col items-center justify-center min-h-[220px] bg-black/20",
+              isDragging ? "border-blue-500 bg-blue-500/10" : "hover:border-white/40 hover:bg-white/5"
             )}
           >
             {isConverting ? (
@@ -390,16 +390,16 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
                 <div className="flex flex-wrap justify-center gap-3">
                   <button 
                     onClick={() => fileInputRef.current?.click()}
-                    className="bg-foreground text-background px-5 py-2.5 rounded-full text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm"
+                    className="bg-white text-black px-6 py-3 rounded-full text-xs font-bold shadow-glow hover:scale-[1.02] active:scale-95 anim-spring"
                   >
                     Seleziona file
                   </button>
                   
                   <button 
                     onClick={() => setIsContinuityOpen(true)}
-                    className="bg-surface border border-gray-200 dark:border-gray-800 text-foreground px-5 py-2.5 rounded-full text-xs font-semibold hover:bg-surface-hover active:scale-95 transition-all flex items-center gap-2"
+                    className="glass-button px-6 py-3 text-xs font-bold flex items-center gap-2 hover:text-white"
                   >
-                    <Smartphone className="w-4 h-4 text-blue-500" />
+                    <Smartphone className="w-4 h-4 text-blue-400" />
                     Collega iPhone
                   </button>
                 </div>
@@ -426,17 +426,17 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
 
           {photos.length > 0 && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-900 pb-2">
-                <span className="text-sm font-semibold">Analisi Immagini ({photos.length})</span>
-                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", photos.length >= 4 ? "bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400" : "bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400")}>
-                  {photos.length >= 4 ? "✓ Minimo 4 angolazioni caricate" : `Carica almeno altre ${4 - photos.length} angolazioni`}
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <span className="text-sm font-semibold text-white">Analisi Immagini ({photos.length})</span>
+                <span className={cn("text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border", photos.length >= 4 ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-amber-500/20 text-amber-400 border-amber-500/30")}>
+                  {photos.length >= 4 ? "✓ 4+ angolazioni" : `Carica altre ${4 - photos.length} angolazioni`}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {photos.map((photo, index) => (
-                  <div key={photo.id} className="flex bg-surface border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group shadow-sm hover:shadow transition-all">
-                    <div className="relative w-28 h-28 shrink-0 bg-gray-100 dark:bg-gray-900">
+                  <div key={photo.id} className="flex glass-card overflow-hidden group shadow-sm hover:border-white/20 transition-all">
+                    <div className="relative w-28 h-28 shrink-0 bg-black/40">
                       <Image src={photo.showEdges ? photo.edgeUrl : photo.url} alt={photo.name} fill className="object-cover" unoptimized />
                       {photo.showEdges && <div className="absolute inset-0 bg-blue-900/10 border border-blue-500/50 pointer-events-none" />}
                     </div>
@@ -474,34 +474,34 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
         </div>
 
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="glass-card p-6 space-y-4 rounded-[32px]">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-base flex items-center gap-2"><Camera className="w-4 h-4 text-blue-500" /> Guida</h3>
+              <h3 className="font-semibold text-base flex items-center gap-2 text-white"><Camera className="w-4 h-4 text-blue-400" /> Guida</h3>
             </div>
             <div className="space-y-3.5">
               {guidelines.map((guide, idx) => (
-                <div key={idx} className="flex items-start gap-3 bg-surface-hover/30 p-2.5 rounded-xl border border-gray-100/50 dark:border-gray-800/30">
+                <div key={idx} className="flex items-start gap-3 bg-white/5 p-3 rounded-2xl border border-white/5">
                   <span className="text-xl shrink-0 mt-0.5">{guide.icon}</span>
                   <div>
-                    <h4 className="text-xs font-semibold">{guide.title}</h4>
-                    <p className="text-[11px] text-foreground/60 leading-normal mt-0.5">{guide.desc}</p>
+                    <h4 className="text-xs font-bold text-white/90">{guide.title}</h4>
+                    <p className="text-[11px] text-white/60 leading-normal mt-0.5">{guide.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="bg-gradient-to-tr from-blue-500/10 via-purple-500/5 to-transparent border border-blue-500/20 rounded-2xl p-5 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+          <div className="glass-card border border-blue-500/20 rounded-[32px] p-6 shadow-sm space-y-3 bg-blue-500/5">
+            <div className="flex items-center gap-2 text-blue-400">
               <SmartphoneIcon className="w-4 h-4" />
               <span className="text-xs font-bold uppercase tracking-wider">Pairing iPhone in tempo reale</span>
             </div>
-            <p className="text-xs text-foreground/70 leading-relaxed">
+            <p className="text-xs text-white/70 leading-relaxed">
               Scansiona il QR Code con l'iPhone per scattare foto e vederle apparire qui all'istante (convertite in automatico in JPEG).
             </p>
             <button 
               onClick={() => setIsContinuityOpen(true)}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl py-2.5 text-xs font-semibold transition-colors shadow-sm flex items-center justify-center gap-1.5"
+              className="w-full bg-blue-500 hover:bg-blue-400 text-white rounded-full py-3 text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 anim-spring active:scale-95"
             >
               Connetti iPhone tramite QR
             </button>
@@ -509,14 +509,14 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
         </div>
       </div>
 
-      <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-800">
-        <div className="text-xs text-foreground/40">* Elaborazione Edge locale. Nessun costo cloud.</div>
+      <div className="flex justify-between items-center pt-6 border-t border-white/5">
+        <div className="text-[10px] text-white/40 tracking-wider uppercase font-bold">* Elaborazione Edge locale. Nessun costo cloud.</div>
         <button
           onClick={handleNextStep}
           disabled={photos.length === 0 || isConverting}
-          className={cn("px-8 py-3 rounded-full text-xs font-semibold transition-all shadow-md flex items-center gap-2", (photos.length === 0 || isConverting) ? "bg-foreground/10 text-foreground/30 cursor-not-allowed" : "bg-foreground text-background hover:scale-105 active:scale-95")}
+          className={cn("px-8 py-3.5 rounded-full text-xs font-bold shadow-glow flex items-center gap-2 anim-spring disabled:hover:scale-100 active:scale-95", (photos.length === 0 || isConverting) ? "bg-white/10 text-white/30 cursor-not-allowed shadow-none" : "bg-white text-black hover:scale-[1.02]")}
         >
-          Salva e Continua <span className="text-[10px] opacity-60">Step 2 di 3</span>
+          Salva e Continua <span className="text-[9px] opacity-60 ml-1">Step 2 di 3</span>
         </button>
       </div>
 

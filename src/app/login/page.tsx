@@ -48,16 +48,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative">
-      <div className="w-full max-w-md bg-surface border border-border p-8 rounded-3xl shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0b] p-4 relative overflow-hidden">
+      {/* Decorative Background Blobs */}
+      <div className="absolute top-[20%] left-[20%] w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[20%] w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="w-full max-w-[420px] glass-card p-8 sm:p-10 relative z-10">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-foreground text-background flex items-center justify-center mb-4">
+          <div className="w-12 h-12 rounded-[16px] bg-white text-black flex items-center justify-center mb-5 shadow-glow">
             <Sparkles className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-white">
             {isLoginMode ? "Accedi a RoomAI" : "Crea un Account"}
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-white/60 text-sm mt-2 text-center">
             {isLoginMode ? "Bentornato! Inserisci i tuoi dati." : "Inizia a sincronizzare i tuoi progetti 3D in Cloud."}
           </p>
         </div>
@@ -68,56 +72,56 @@ export default function LoginPage() {
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-foreground/80 px-1">Email</label>
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold tracking-widest text-white/50 uppercase px-1">Email</label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+                className="w-full bg-black/40 border border-white/10 rounded-2xl py-3.5 pl-11 pr-4 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all placeholder:text-white/30"
                 placeholder="mario@email.it"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-foreground/80 px-1">Password</label>
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold tracking-widest text-white/50 uppercase px-1">Password</label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+                className="w-full bg-black/40 border border-white/10 rounded-2xl py-3.5 pl-11 pr-4 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all placeholder:text-white/30"
                 placeholder="••••••••"
               />
             </div>
           </div>
 
           {!isLoginMode && (
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-foreground/80 px-1">Conferma Password</label>
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold tracking-widest text-white/50 uppercase px-1">Conferma Password</label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                 <input
                   type="password"
                   value={passwordConfirm}
                   onChange={(e) => setPasswordConfirm(e.target.value)}
-                  className="w-full bg-background border border-border rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-3.5 pl-11 pr-4 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all placeholder:text-white/30"
                   placeholder="••••••••"
                 />
               </div>
             </div>
           )}
 
-          <div className="flex flex-col gap-3 pt-6">
+          <div className="flex flex-col gap-4 pt-8">
             <button
               onClick={handleAuth}
               disabled={loading || !email || !password || (!isLoginMode && !passwordConfirm)}
-              className="w-full bg-foreground text-background py-3 rounded-xl text-sm font-bold shadow-md hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-white text-black py-3.5 rounded-full text-sm font-bold shadow-glow hover:scale-[1.02] active:scale-95 anim-spring disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {isLoginMode ? "Accedi" : "Registrati Ora"}
@@ -125,7 +129,7 @@ export default function LoginPage() {
             
             <button
               onClick={() => { setIsLoginMode(!isLoginMode); setError(null); }}
-              className="text-sm text-foreground/60 hover:text-foreground hover:underline transition-colors mt-2"
+              className="text-xs font-semibold tracking-wide text-white/50 hover:text-white transition-colors mt-2 uppercase"
             >
               {isLoginMode 
                 ? "Non hai un account? Registrati" 

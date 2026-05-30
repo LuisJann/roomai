@@ -2,9 +2,11 @@
 
 import { Sidebar } from "@/components/workspace/Sidebar";
 import { useState, useEffect } from "react";
-import { Menu, Sparkles, X } from "lucide-react";
+import { Menu, Sparkles, X, Home, Image as ImageIcon, Box } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export default function WorkspaceLayout({
   children,
@@ -118,7 +120,7 @@ export default function WorkspaceLayout({
               damping: 26,
               mass: 0.8,
             }}
-            className="bg-surface/90 backdrop-blur-3xl border border-white/10 dark:border-white/5 shadow-premium overflow-hidden cursor-pointer pointer-events-auto"
+            className="glass-panel !bg-black/60 !border-white/20 shadow-[0_16px_60px_rgba(0,0,0,0.8)] overflow-hidden cursor-pointer pointer-events-auto"
             style={{ maxWidth: 'calc(100vw - 32px)', originX: 1, originY: 0 }}
             onClick={() => { if (!isMobileOpen) setIsMobileOpen(true); }}
           >
@@ -132,7 +134,7 @@ export default function WorkspaceLayout({
                   transition={{ duration: 0.15 }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
-                  <Menu className={`${isEditor ? "w-5 h-5" : "w-6 h-6"} text-foreground`} />
+                  <Menu className={`${isEditor ? "w-5 h-5" : "w-6 h-6"} text-white`} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -148,14 +150,14 @@ export default function WorkspaceLayout({
                   className="flex flex-col h-full"
                 >
                   <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
-                    <span className="text-[11px] font-bold uppercase tracking-widest flex items-center gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 text-white/90">
                       Menu Principale
                     </span>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setIsMobileOpen(false); }} 
                       className="p-1.5 hover:bg-white/10 rounded-full transition-colors bg-white/5"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-4 h-4 text-white" />
                     </button>
                   </div>
                   <div className="flex-1 overflow-hidden">
@@ -173,7 +175,10 @@ export default function WorkspaceLayout({
         <Sidebar isOpen={false} onClose={() => {}} />
       </div>
       
-      <main className={`flex-1 flex flex-col md:ml-64 min-h-0 ${isEditor ? "p-0 overflow-hidden" : "pt-24 p-4 md:pt-8 md:p-8 overflow-y-auto"}`}>
+      <main className={cn(
+        "flex-1 flex flex-col min-h-0",
+        isEditor ? "p-0 overflow-hidden md:pl-72" : "pt-24 p-4 md:py-6 md:pr-6 md:pl-72 overflow-y-auto"
+      )}>
         {children}
       </main>
     </div>

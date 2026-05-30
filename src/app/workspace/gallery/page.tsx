@@ -58,10 +58,10 @@ export default function GalleryPage() {
   return (
     <div className="max-w-6xl mx-auto py-8 space-y-12 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-          <Images className="w-8 h-8 text-blue-500" /> I Miei Render e Ispirazioni
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3 text-white">
+          <Images className="w-8 h-8 text-blue-400" /> I Miei Render e Ispirazioni
         </h1>
-        <p className="text-foreground/60 mt-2">
+        <p className="text-white/60 mt-2">
           Qui trovi tutto il materiale generato in background e salvato nel Database.
         </p>
       </div>
@@ -72,25 +72,25 @@ export default function GalleryPage() {
         <>
           {canSeeRenders && (
           <section>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-indigo-500" /> Render Reali (Strutturali)
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
+              <ImageIcon className="w-5 h-5 text-indigo-400" /> Render Reali (Strutturali)
             </h2>
             {renders.length === 0 ? (
-              <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center text-foreground/50">
+              <div className="glass-card rounded-[32px] p-8 text-center text-white/50">
                 Non hai ancora salvato nessun render reale.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {renders.map((img) => (
-                  <div key={img.id} className="bg-surface rounded-2xl overflow-hidden shadow-sm border border-border flex flex-col">
-                    <div className="relative w-full h-64">
+                  <div key={img.id} className="glass-card rounded-2xl overflow-hidden shadow-sm flex flex-col group hover:-translate-y-1 transition-all duration-300 border border-white/10 hover:border-white/20 p-2">
+                    <div className="relative w-full h-64 rounded-xl overflow-hidden">
                       <Image src={img.public_url} alt="Render" fill className="object-cover" unoptimized />
                     </div>
-                    <div className="p-3 flex gap-2">
-                      <a href={img.public_url} download target="_blank" rel="noreferrer" className="flex-1 bg-secondary text-foreground text-center py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 hover:bg-secondary/80 transition-colors">
+                    <div className="pt-3 flex gap-2">
+                      <a href={img.public_url} download target="_blank" rel="noreferrer" className="flex-1 bg-white text-black text-center py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 anim-spring hover:scale-[1.02] shadow-glow">
                         <Download className="w-3.5 h-3.5 shrink-0" /> Scarica
                       </a>
-                      <button onClick={() => deleteImage(img.id, img.storage_path)} className="flex-1 bg-red-500/10 text-red-500 py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 hover:bg-red-500/20 transition-colors">
+                      <button onClick={() => deleteImage(img.id, img.storage_path)} className="flex-1 bg-red-500/10 text-red-500 py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 hover:bg-red-500/20 anim-spring hover:scale-[1.02]">
                         <Trash2 className="w-3.5 h-3.5 shrink-0" /> Elimina
                       </button>
                     </div>
@@ -103,25 +103,25 @@ export default function GalleryPage() {
 
           {canSeeInspirations && (
           <section>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-yellow-500" /> Ispirazioni (Text-to-Image)
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
+              <ImageIcon className="w-5 h-5 text-yellow-400" /> Ispirazioni (Text-to-Image)
             </h2>
             {inspirations.length === 0 ? (
-              <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center text-foreground/50">
+              <div className="glass-card rounded-[32px] p-8 text-center text-white/50">
                 Nessuna ispirazione salvata.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {inspirations.map((img) => (
-                  <div key={img.id} className="bg-surface rounded-2xl overflow-hidden shadow-sm border border-border flex flex-col">
-                    <div className="relative w-full h-64">
+                  <div key={img.id} className="glass-card rounded-2xl overflow-hidden shadow-sm flex flex-col group hover:-translate-y-1 transition-all duration-300 border border-white/10 hover:border-white/20 p-2">
+                    <div className="relative w-full h-64 rounded-xl overflow-hidden">
                       <Image src={img.public_url} alt="Inspiration" fill className="object-cover" unoptimized />
                     </div>
-                    <div className="p-3 flex gap-2">
-                      <a href={img.public_url} download target="_blank" rel="noreferrer" className="flex-1 bg-secondary text-foreground text-center py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 hover:bg-secondary/80 transition-colors">
+                    <div className="pt-3 flex gap-2">
+                      <a href={img.public_url} download target="_blank" rel="noreferrer" className="flex-1 bg-white text-black text-center py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 anim-spring hover:scale-[1.02] shadow-glow">
                         <Download className="w-3.5 h-3.5 shrink-0" /> Scarica
                       </a>
-                      <button onClick={() => deleteImage(img.id, img.storage_path)} className="flex-1 bg-red-500/10 text-red-500 py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 hover:bg-red-500/20 transition-colors">
+                      <button onClick={() => deleteImage(img.id, img.storage_path)} className="flex-1 bg-red-500/10 text-red-500 py-2 px-1 rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 hover:bg-red-500/20 anim-spring hover:scale-[1.02]">
                         <Trash2 className="w-3.5 h-3.5 shrink-0" /> Elimina
                       </button>
                     </div>

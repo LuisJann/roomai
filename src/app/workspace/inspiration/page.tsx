@@ -78,28 +78,28 @@ export default function InspirationPage() {
   return (
     <div className="max-w-6xl mx-auto py-8 animate-in fade-in zoom-in-95 duration-500">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <LightbulbIcon className="w-8 h-8 text-yellow-500" /> Cerca Ispirazione AI
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2 text-white">
+          <LightbulbIcon className="w-8 h-8 text-yellow-400" /> Cerca Ispirazione AI
         </h1>
-        <p className="text-foreground/60 mt-2 max-w-2xl">
+        <p className="text-white/60 mt-2 max-w-2xl">
           Non sai da dove iniziare? Usa il nostro motore gratuito Text-to-Image per esplorare infinite possibilità di design. Inserisci i dettagli e l'AI genererà una stanza fotorealistica da zero per ispirarti.
         </p>
       </div>
 
       <div className="max-w-2xl mx-auto">
-        <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl p-8 shadow-sm space-y-6">
+        <div className="glass-card rounded-[32px] p-8 shadow-sm space-y-8">
           <div>
-            <label className="text-xs font-bold text-foreground/80 uppercase tracking-wider block mb-2">Tipo di Stanza</label>
+            <label className="text-[10px] font-bold text-white/50 uppercase tracking-widest block mb-3">Tipo di Stanza</label>
             <div className="flex flex-wrap gap-2">
               {roomOptions.map(room => (
                 <button
                   key={room}
                   onClick={() => setSelectedRoom(room)}
                   className={cn(
-                    "px-4 py-2 rounded-xl text-xs font-semibold transition-all border",
+                    "px-4 py-2.5 rounded-xl text-xs font-bold transition-all border",
                     selectedRoom === room 
-                      ? "bg-foreground text-background border-foreground" 
-                      : "bg-background text-foreground/70 border-gray-200 dark:border-gray-800 hover:border-gray-400"
+                      ? "bg-white text-black border-white shadow-glow" 
+                      : "bg-black/40 text-white/70 border-white/10 hover:border-white/30 hover:bg-white/5"
                   )}
                 >
                   {room}
@@ -109,17 +109,17 @@ export default function InspirationPage() {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-foreground/80 uppercase tracking-wider block mb-2">Stile Architettonico</label>
+            <label className="text-[10px] font-bold text-white/50 uppercase tracking-widest block mb-3">Stile Architettonico</label>
             <div className="flex flex-wrap gap-2">
               {styleOptions.map(style => (
                 <button
                   key={style}
                   onClick={() => setSelectedStyle(style)}
                   className={cn(
-                    "px-4 py-2 rounded-xl text-xs font-semibold transition-all border",
+                    "px-4 py-2.5 rounded-xl text-xs font-bold transition-all border",
                     selectedStyle === style 
-                      ? "bg-blue-500 text-white border-blue-500 shadow-sm" 
-                      : "bg-background text-foreground/70 border-gray-200 dark:border-gray-800 hover:border-gray-400"
+                      ? "bg-white text-black border-white shadow-glow" 
+                      : "bg-black/40 text-white/70 border-white/10 hover:border-white/30 hover:bg-white/5"
                   )}
                 >
                   {style}
@@ -129,19 +129,19 @@ export default function InspirationPage() {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-foreground/80 uppercase tracking-wider block mb-2">Dettagli Aggiuntivi (Opzionale)</label>
+            <label className="text-[10px] font-bold text-white/50 uppercase tracking-widest block mb-3">Dettagli Aggiuntivi (Opzionale)</label>
             <textarea
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
               placeholder="es. Divano verde smeraldo, grande finestra con vista montagna, pavimento in legno scuro..."
-              className="w-full bg-background border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-28"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 resize-none h-32 transition-all"
             />
           </div>
 
           <button 
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl px-4 py-4 font-bold transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-2xl px-4 py-4 font-bold shadow-glow anim-spring hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none"
           >
             {isGenerating ? (
               <Sparkles className="w-5 h-5 animate-spin" />

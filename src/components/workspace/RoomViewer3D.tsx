@@ -294,48 +294,35 @@ function PrimitiveFurniture({ type, color, intensity }: { type: string; color?: 
     case 'light_point':
       return (
         <group>
-          {/* Rosetta a soffitto */}
-          <mesh position={[0, 0.12, 0]}>
-            <cylinderGeometry args={[0.08, 0.08, 0.02, 24]} />
-            <meshStandardMaterial color="#d4d4d8" roughness={0.4} metalness={0.3} />
+          {/* Rosetta a soffitto moderna */}
+          <mesh position={[0, 0.18, 0]}>
+            <cylinderGeometry args={[0.06, 0.06, 0.03, 32]} />
+            <meshStandardMaterial color="#18181b" roughness={0.2} metalness={0.8} />
           </mesh>
-          {/* Filo del pendente */}
-          <mesh position={[0, 0.04, 0]}>
-            <cylinderGeometry args={[0.006, 0.006, 0.16, 8]} />
-            <meshStandardMaterial color="#27272a" roughness={0.8} />
+          {/* Cavo sottile elegante */}
+          <mesh position={[0, 0.08, 0]}>
+            <cylinderGeometry args={[0.002, 0.002, 0.2, 8]} />
+            <meshStandardMaterial color="#18181b" roughness={0.8} />
           </mesh>
-          {/* Portalampada */}
+          {/* Paralume a cono moderno */}
           <mesh position={[0, -0.04, 0]}>
-            <cylinderGeometry args={[0.03, 0.025, 0.06, 16]} />
-            <meshStandardMaterial color="#3f3f46" roughness={0.3} metalness={0.7} />
+            <coneGeometry args={[0.15, 0.12, 32]} />
+            <meshStandardMaterial color="#27272a" roughness={0.1} metalness={0.6} side={2} />
           </mesh>
-          {/* Bulbo sfera – glows */}
-          <mesh position={[0, -0.1, 0]}>
-            <sphereGeometry args={[0.06, 24, 24]} />
+          {/* Diffusore interno luminoso */}
+          <mesh position={[0, -0.09, 0]}>
+            <cylinderGeometry args={[0.14, 0.14, 0.01, 32]} />
             <meshStandardMaterial
-              color={color || "#fef3c7"}
-              emissive={color || "#fef3c7"}
-              emissiveIntensity={(intensity ?? 1.5)}
-              roughness={0.05}
-              metalness={0}
-              transparent
-              opacity={0.92}
-            />
-          </mesh>
-          {/* Alone luminoso (halo) */}
-          <mesh position={[0, -0.1, 0]}>
-            <sphereGeometry args={[0.13, 16, 16]} />
-            <meshStandardMaterial
-              color={color || "#fef3c7"}
-              transparent
-              opacity={0.08}
-              depthWrite={false}
+              color={color || "#fffbeb"}
+              emissive={color || "#fffbeb"}
+              emissiveIntensity={intensity ?? 2}
+              roughness={0.4}
             />
           </mesh>
           {/* Luce puntuale */}
           <pointLight
-            color={color || "#fff5e0"}
-            intensity={(intensity ?? 1.5) * 60}
+            color={color || "#fffbeb"}
+            intensity={(intensity ?? 1.5) * 80}
             distance={0}
             decay={2}
             castShadow
@@ -346,89 +333,79 @@ function PrimitiveFurniture({ type, color, intensity }: { type: string; color?: 
       return (
         <group position={[0, 105, 0]}>
           {/* Telaio superiore */}
-          <mesh castShadow position={[0, 112, 0]}>
-            <boxGeometry args={[96, 12, 14]} />
-            <meshStandardMaterial color={color || "#e7e5e4"} roughness={0.7} />
+          <mesh castShadow position={[0, 105, 0]}>
+            <boxGeometry args={[96, 4, 16]} />
+            <meshStandardMaterial color={color || "#e7e5e4"} roughness={0.4} />
           </mesh>
           {/* Telaio sinistro */}
-          <mesh castShadow position={[-47, 0, 0]}>
-            <boxGeometry args={[8, 210, 14]} />
-            <meshStandardMaterial color={color || "#e7e5e4"} roughness={0.7} />
+          <mesh castShadow position={[-46, 0, 0]}>
+            <boxGeometry args={[4, 210, 16]} />
+            <meshStandardMaterial color={color || "#e7e5e4"} roughness={0.4} />
           </mesh>
           {/* Telaio destro */}
-          <mesh castShadow position={[47, 0, 0]}>
-            <boxGeometry args={[8, 210, 14]} />
-            <meshStandardMaterial color={color || "#e7e5e4"} roughness={0.7} />
+          <mesh castShadow position={[46, 0, 0]}>
+            <boxGeometry args={[4, 210, 16]} />
+            <meshStandardMaterial color={color || "#e7e5e4"} roughness={0.4} />
           </mesh>
-          {/* Anta della porta */}
-          <mesh castShadow position={[0, 0, 0]}>
-            <boxGeometry args={[84, 208, 6]} />
-            <meshStandardMaterial color={color || "#fafaf9"} roughness={0.6} />
+          {/* Anta della porta (Modern flat) */}
+          <mesh castShadow position={[0, 0, 2]}>
+            <boxGeometry args={[88, 206, 4]} />
+            <meshStandardMaterial color={color || "#fafaf9"} roughness={0.5} />
           </mesh>
-          {/* Pannello incassato superiore */}
-          <mesh position={[0, 55, 4]}>
-            <boxGeometry args={[60, 80, 2]} />
-            <meshStandardMaterial color={color ? color : "#f5f5f4"} roughness={0.5} />
+          {/* Dettaglio scanalatura anta centrale */}
+          <mesh position={[0, 0, 4.01]}>
+            <boxGeometry args={[2, 206, 0.1]} />
+            <meshStandardMaterial color="#e5e5e5" roughness={0.6} />
           </mesh>
-          {/* Pannello incassato inferiore */}
-          <mesh position={[0, -45, 4]}>
-            <boxGeometry args={[60, 100, 2]} />
-            <meshStandardMaterial color={color ? color : "#f5f5f4"} roughness={0.5} />
-          </mesh>
-          {/* Maniglia – corpo */}
-          <mesh position={[30, 5, 6]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[2.5, 2.5, 14, 16]} />
-            <meshStandardMaterial color="#a1a1aa" metalness={0.9} roughness={0.15} />
-          </mesh>
-          {/* Maniglia – rosetta */}
-          <mesh position={[30, 5, 4]}>
-            <cylinderGeometry args={[4, 4, 2, 16]} />
-            <meshStandardMaterial color="#a1a1aa" metalness={0.9} roughness={0.15} />
-          </mesh>
+          {/* Maniglia moderna */}
+          <group position={[35, 5, 5]}>
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[2.5, 2.5, 1, 32]} />
+              <meshStandardMaterial color="#3f3f46" metalness={0.8} roughness={0.2} />
+            </mesh>
+            <mesh position={[0, 0, 3]}>
+              <boxGeometry args={[14, 2, 2]} />
+              <meshStandardMaterial color="#3f3f46" metalness={0.8} roughness={0.2} />
+            </mesh>
+            <mesh position={[-6, 0, 1.5]}>
+              <boxGeometry args={[2, 2, 3]} />
+              <meshStandardMaterial color="#3f3f46" metalness={0.8} roughness={0.2} />
+            </mesh>
+          </group>
         </group>
       );
     case 'window':
       return (
         <group position={[0, 60, 0]}>
-          {/* Telaio esterno */}
-          <mesh castShadow>
-            <boxGeometry args={[126, 126, 16]} />
-            <meshStandardMaterial color={color || "#e7e5e4"} roughness={0.6} />
+          {/* Telaio Superiore */}
+          <mesh castShadow position={[0, 60, 0]}>
+            <boxGeometry args={[126, 6, 16]} />
+            <meshStandardMaterial color={color || "#27272a"} roughness={0.3} metalness={0.2} />
           </mesh>
-          {/* Davanzale esterno */}
-          <mesh castShadow position={[0, -66, -4]}>
-            <boxGeometry args={[134, 8, 24]} />
-            <meshStandardMaterial color={color || "#d4d4d8"} roughness={0.5} />
-          </mesh>
-          {/* Traversa orizzontale centrale */}
-          <mesh position={[0, 0, 2]}>
-            <boxGeometry args={[120, 6, 12]} />
+          {/* Telaio Inferiore (Davanzale) */}
+          <mesh castShadow position={[0, -60, 0]}>
+            <boxGeometry args={[130, 8, 20]} />
             <meshStandardMaterial color={color || "#e4e4e7"} roughness={0.6} />
           </mesh>
-          {/* Montante verticale centrale */}
-          <mesh position={[0, 0, 2]}>
-            <boxGeometry args={[6, 120, 12]} />
-            <meshStandardMaterial color={color || "#e4e4e7"} roughness={0.6} />
+          {/* Telaio Sinistro */}
+          <mesh castShadow position={[-60, 0, 0]}>
+            <boxGeometry args={[6, 114, 16]} />
+            <meshStandardMaterial color={color || "#27272a"} roughness={0.3} metalness={0.2} />
           </mesh>
-          {/* Vetro superiore sinistro */}
-          <mesh position={[-30, 30, 1]}>
-            <boxGeometry args={[52, 52, 4]} />
-            <meshStandardMaterial color="#bae6fd" transparent opacity={0.45} metalness={0.9} roughness={0.05} />
+          {/* Telaio Destro */}
+          <mesh castShadow position={[60, 0, 0]}>
+            <boxGeometry args={[6, 114, 16]} />
+            <meshStandardMaterial color={color || "#27272a"} roughness={0.3} metalness={0.2} />
           </mesh>
-          {/* Vetro superiore destro */}
-          <mesh position={[30, 30, 1]}>
-            <boxGeometry args={[52, 52, 4]} />
-            <meshStandardMaterial color="#bae6fd" transparent opacity={0.45} metalness={0.9} roughness={0.05} />
+          {/* Vetro intero */}
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={[114, 114, 2]} />
+            <meshStandardMaterial color="#bae6fd" transparent opacity={0.3} metalness={0.9} roughness={0.05} />
           </mesh>
-          {/* Vetro inferiore sinistro */}
-          <mesh position={[-30, -30, 1]}>
-            <boxGeometry args={[52, 52, 4]} />
-            <meshStandardMaterial color="#bae6fd" transparent opacity={0.45} metalness={0.9} roughness={0.05} />
-          </mesh>
-          {/* Vetro inferiore destro */}
-          <mesh position={[30, -30, 1]}>
-            <boxGeometry args={[52, 52, 4]} />
-            <meshStandardMaterial color="#bae6fd" transparent opacity={0.45} metalness={0.9} roughness={0.05} />
+          {/* Traversa orizzontale sottile (stile moderno) */}
+          <mesh position={[0, -10, 1]}>
+            <boxGeometry args={[114, 2, 4]} />
+            <meshStandardMaterial color={color || "#27272a"} roughness={0.3} metalness={0.2} />
           </mesh>
         </group>
       );
@@ -823,7 +800,7 @@ export function RoomViewer3D({
 
   if (!mounted) {
     return (
-      <div className="w-full aspect-[4/3] bg-gray-900 rounded-2xl flex flex-col items-center justify-center text-white/50 text-xs gap-3 border border-gray-800">
+      <div className="w-full h-full bg-gray-900 flex flex-col items-center justify-center text-white/50 text-xs gap-3">
         <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
         <span>Inizializzazione vista 3D...</span>
       </div>
@@ -836,7 +813,7 @@ export function RoomViewer3D({
 
   // Let's import useRef if it's not imported or just use React.useRef
   return (
-    <div className="relative w-full h-full md:aspect-[4/3] bg-[#0a0a0c] md:rounded-2xl overflow-hidden border-t md:border border-gray-200 dark:border-gray-800 md:shadow-md touch-none overscroll-none">
+    <div className="relative w-full h-full bg-[#0a0a0c] overflow-hidden touch-none overscroll-none">
       {/* The Legend has been moved to the floating bottom bar */}
       
       <Canvas 
@@ -883,7 +860,7 @@ export function RoomViewer3D({
           <meshStandardMaterial color="#141418" roughness={0.9} />
         </mesh>
         
-        <gridHelper args={[Math.max(lenM, widM) * 2, 20, "#334155", "#1e293b"]} position={[0, 0.005, 0]} />
+        <gridHelper args={[Math.max(lenM, widM) * 2, 20, "#334155", "#1e293b"]} position={[0, -0.01, 0]} />
 
         {customModelUrl ? (
           <ModelErrorBoundary 
@@ -939,41 +916,41 @@ export function RoomViewer3D({
               const posX = -lenM / 2 + spacing * (i + 1);
               return (
                 <group key={`door-${i}`} position={[posX, 0, -widM / 2]}>
+                  {/* Telaio superiore */}
+                  <mesh castShadow position={[0, 2.1, 0]}>
+                    <boxGeometry args={[0.96, 0.04, 0.16]} />
+                    <meshStandardMaterial color="#e7e5e4" roughness={0.4} />
+                  </mesh>
                   {/* Telaio sinistro */}
-                  <mesh castShadow position={[-0.47, 1.05, 0]}>
-                    <boxGeometry args={[0.08, 2.1, 0.14]} />
-                    <meshStandardMaterial color="#e7e5e4" roughness={0.7} />
+                  <mesh castShadow position={[-0.46, 1.05, 0]}>
+                    <boxGeometry args={[0.04, 2.1, 0.16]} />
+                    <meshStandardMaterial color="#e7e5e4" roughness={0.4} />
                   </mesh>
                   {/* Telaio destro */}
-                  <mesh castShadow position={[0.47, 1.05, 0]}>
-                    <boxGeometry args={[0.08, 2.1, 0.14]} />
-                    <meshStandardMaterial color="#e7e5e4" roughness={0.7} />
-                  </mesh>
-                  {/* Telaio superiore */}
-                  <mesh castShadow position={[0, 2.16, 0]}>
-                    <boxGeometry args={[0.96, 0.1, 0.14]} />
-                    <meshStandardMaterial color="#e7e5e4" roughness={0.7} />
+                  <mesh castShadow position={[0.46, 1.05, 0]}>
+                    <boxGeometry args={[0.04, 2.1, 0.16]} />
+                    <meshStandardMaterial color="#e7e5e4" roughness={0.4} />
                   </mesh>
                   {/* Anta porta */}
-                  <mesh castShadow position={[0, 1.05, 0.01]}>
-                    <boxGeometry args={[0.84, 2.08, 0.06]} />
-                    <meshStandardMaterial color="#fafaf9" roughness={0.6} />
-                  </mesh>
-                  {/* Pannello superiore */}
-                  <mesh position={[0, 1.55, 0.05]}>
-                    <boxGeometry args={[0.6, 0.8, 0.02]} />
-                    <meshStandardMaterial color="#f5f5f4" roughness={0.5} />
-                  </mesh>
-                  {/* Pannello inferiore */}
-                  <mesh position={[0, 0.55, 0.05]}>
-                    <boxGeometry args={[0.6, 1.0, 0.02]} />
-                    <meshStandardMaterial color="#f5f5f4" roughness={0.5} />
+                  <mesh castShadow position={[0, 1.05, 0.02]}>
+                    <boxGeometry args={[0.88, 2.06, 0.04]} />
+                    <meshStandardMaterial color="#fafaf9" roughness={0.5} />
                   </mesh>
                   {/* Maniglia */}
-                  <mesh position={[0.3, 1.05, 0.07]} rotation={[Math.PI / 2, 0, 0]}>
-                    <cylinderGeometry args={[0.025, 0.025, 0.13, 16]} />
-                    <meshStandardMaterial color="#a1a1aa" metalness={0.9} roughness={0.15} />
-                  </mesh>
+                  <group position={[0.35, 1.05, 0.05]}>
+                    <mesh rotation={[Math.PI / 2, 0, 0]}>
+                      <cylinderGeometry args={[0.025, 0.025, 0.01, 32]} />
+                      <meshStandardMaterial color="#3f3f46" metalness={0.8} roughness={0.2} />
+                    </mesh>
+                    <mesh position={[0, 0, 0.03]}>
+                      <boxGeometry args={[0.14, 0.02, 0.02]} />
+                      <meshStandardMaterial color="#3f3f46" metalness={0.8} roughness={0.2} />
+                    </mesh>
+                    <mesh position={[-0.06, 0, 0.015]}>
+                      <boxGeometry args={[0.02, 0.02, 0.03]} />
+                      <meshStandardMaterial color="#3f3f46" metalness={0.8} roughness={0.2} />
+                    </mesh>
+                  </group>
                   <Html distanceFactor={4} position={[0, 2.35, 0]}>
                     <span className="bg-amber-800 text-white px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest pointer-events-none">
                       Porta {i + 1}
@@ -988,33 +965,36 @@ export function RoomViewer3D({
               const posX = -lenM / 2 + spacing * (i + 1);
               return (
                 <group key={`window-${i}`} position={[posX, 1.1, widM / 2]}>
-                  {/* Telaio esterno */}
-                  <mesh castShadow>
-                    <boxGeometry args={[1.26, 1.26, 0.16]} />
-                    <meshStandardMaterial color="#e7e5e4" roughness={0.6} />
+                  {/* Telaio Superiore */}
+                  <mesh castShadow position={[0, 0.6, 0]}>
+                    <boxGeometry args={[1.26, 0.06, 0.16]} />
+                    <meshStandardMaterial color="#27272a" roughness={0.3} metalness={0.2} />
                   </mesh>
-                  {/* Davanzale */}
-                  <mesh castShadow position={[0, -0.66, -0.04]}>
-                    <boxGeometry args={[1.34, 0.08, 0.22]} />
-                    <meshStandardMaterial color="#d4d4d8" roughness={0.5} />
-                  </mesh>
-                  {/* Traversa centrale */}
-                  <mesh position={[0, 0, 0.02]}>
-                    <boxGeometry args={[1.2, 0.06, 0.12]} />
+                  {/* Telaio Inferiore */}
+                  <mesh castShadow position={[0, -0.6, 0]}>
+                    <boxGeometry args={[1.3, 0.08, 0.2]} />
                     <meshStandardMaterial color="#e4e4e7" roughness={0.6} />
                   </mesh>
-                  {/* Montante centrale */}
-                  <mesh position={[0, 0, 0.02]}>
-                    <boxGeometry args={[0.06, 1.2, 0.12]} />
-                    <meshStandardMaterial color="#e4e4e7" roughness={0.6} />
+                  {/* Telaio Sinistro */}
+                  <mesh castShadow position={[-0.6, 0, 0]}>
+                    <boxGeometry args={[0.06, 1.14, 0.16]} />
+                    <meshStandardMaterial color="#27272a" roughness={0.3} metalness={0.2} />
                   </mesh>
-                  {/* 4 vetri */}
-                  {[[-0.3, 0.3], [0.3, 0.3], [-0.3, -0.3], [0.3, -0.3]].map(([gx, gy], gi) => (
-                    <mesh key={gi} position={[gx, gy, 0.01]}>
-                      <boxGeometry args={[0.52, 0.52, 0.04]} />
-                      <meshStandardMaterial color="#bae6fd" transparent opacity={0.45} metalness={0.9} roughness={0.05} />
-                    </mesh>
-                  ))}
+                  {/* Telaio Destro */}
+                  <mesh castShadow position={[0.6, 0, 0]}>
+                    <boxGeometry args={[0.06, 1.14, 0.16]} />
+                    <meshStandardMaterial color="#27272a" roughness={0.3} metalness={0.2} />
+                  </mesh>
+                  {/* Vetro */}
+                  <mesh position={[0, 0, 0]}>
+                    <boxGeometry args={[1.14, 1.14, 0.02]} />
+                    <meshStandardMaterial color="#bae6fd" transparent opacity={0.3} metalness={0.9} roughness={0.05} />
+                  </mesh>
+                  {/* Traversa orizzontale */}
+                  <mesh position={[0, -0.1, 0.01]}>
+                    <boxGeometry args={[1.14, 0.02, 0.04]} />
+                    <meshStandardMaterial color="#27272a" roughness={0.3} metalness={0.2} />
+                  </mesh>
                   <Html distanceFactor={4} position={[0, 0.78, 0]}>
                     <span className="bg-sky-500 text-white px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest pointer-events-none">
                       Finestra {i + 1}

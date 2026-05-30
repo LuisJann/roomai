@@ -554,7 +554,11 @@ export default function Editor3DPage() {
   const isAnythingSelected = !!(selectedObject || selectedRoomNode);
 
   useEffect(() => {
-    setIsMobileMenuExpanded(false);
+    if (selectedObjectId) {
+      setIsMobileMenuExpanded(true);
+    } else {
+      setIsMobileMenuExpanded(false);
+    }
   }, [selectedObjectId]);
 
   useEffect(() => {
@@ -700,7 +704,7 @@ export default function Editor3DPage() {
   };
 
   return (
-    <div className="flex-1 w-full bg-background text-foreground flex flex-col overflow-hidden relative">
+    <div className="w-full h-full relative bg-background text-foreground flex flex-col overflow-hidden">
       
       {loadedProjectOwner && (
         <div className="bg-amber-500 text-amber-950 px-4 py-2 text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 z-50 shadow-md">
@@ -715,7 +719,7 @@ export default function Editor3DPage() {
       )}
 
       {/* Top Navigation / Toolbar */}
-      <div className="border-b border-white/5 bg-gray-950/90 backdrop-blur-md flex items-center justify-between px-4 py-2.5 z-40 shadow-sm shrink-0 gap-3">
+      <div className="glass-panel border-b-0 border-white/10 flex items-center justify-between px-4 py-2.5 z-40 shrink-0 gap-3">
         
         {/* Header Left */}
         <div className="flex items-center gap-2.5">
@@ -733,25 +737,25 @@ export default function Editor3DPage() {
         </div>
         
         {/* Right actions */}
-        <div className="flex items-center gap-1.5 pr-14 md:pr-0">
+        <div className="flex items-center gap-2 pr-14 md:pr-0">
           <button 
             onClick={handleNewProject} 
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-foreground/70 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+            className="hidden md:flex items-center gap-2 px-4 py-2 glass-button hover:bg-white/10 text-[11px] font-bold text-white transition-all rounded-xl"
           >
-            <Plus className="w-3 h-3" /> Nuovo
+            <Plus className="w-3.5 h-3.5" /> Nuovo
           </button>
           <button 
             onClick={undo} 
             disabled={historyLength === 0} 
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-foreground/70 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-30"
+            className="flex items-center gap-2 px-4 py-2 glass-button hover:bg-white/10 text-[11px] font-bold text-white disabled:opacity-30 disabled:pointer-events-none transition-all rounded-xl"
           >
-            <ArrowLeft className="w-3 h-3" /> Annulla
+            <ArrowLeft className="w-3.5 h-3.5" /> Annulla
           </button>
           <button 
             onClick={handleSaveProject} 
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-white bg-blue-600 hover:bg-blue-700 border border-blue-500/50 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-5 py-2 bg-white text-black hover:bg-gray-100 shadow-glow transition-all active:scale-95 anim-spring rounded-xl text-[11px] font-bold"
           >
-            <Save className="w-3 h-3" />
+            <Save className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">{loadedProjectOwner ? 'Duplica' : 'Salva'}</span>
           </button>
         </div>
@@ -913,8 +917,8 @@ export default function Editor3DPage() {
           />
 
           {/* FLOATING BOTTOM BAR (UNIVERSAL) */}
-          <div className="absolute bottom-6 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-2xl z-50">
-            <div className="bg-surface/80 backdrop-blur-xl border border-border rounded-3xl p-3 shadow-2xl flex flex-col gap-3">
+          <div className="absolute bottom-6 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-[700px] z-50">
+            <div className="glass-panel rounded-[32px] p-4 flex flex-col gap-3">
               
               {/* Row 0: Legenda Assi */}
               <div className="flex items-center justify-between px-4 py-2 bg-black/20 rounded-xl border border-white/5">
@@ -933,7 +937,7 @@ export default function Editor3DPage() {
               </div>
               
               {/* Row 1: Floor Height */}
-              <div className="flex items-center gap-2 bg-background/50 px-3 py-2 rounded-2xl border border-border">
+              <div className="flex items-center gap-2 bg-black/20 px-4 py-2.5 rounded-full border border-white/5">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Pavim:</label>
                 <input 
                   type="range" min="-2" max="2" step="0.01" value={floorOffset} 
@@ -945,10 +949,17 @@ export default function Editor3DPage() {
 
               <div className="flex items-center gap-2 w-full overflow-x-auto pb-1 -mb-1 custom-scrollbar">
 
-                {/* Stile base condiviso per tutti i tasti azione */}
+                {/* Toolbar Buttons */}
+                <button 
+                  onClick={handleNewProject} 
+                  className="flex md:hidden shrink-0 min-w-[80px] glass-button py-2.5 text-[10px] font-bold items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap hover:text-white"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Nuovo</span>
+                </button>
 
                 {/* 1. Carica Stanza */}
-                <label className="flex-1 shrink-0 min-w-[90px] bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shadow-sm border border-blue-500/30">
+                <label className="flex-1 shrink-0 min-w-[90px] bg-white text-black py-2.5 rounded-full text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-glow whitespace-nowrap anim-spring">
                   <Upload className="w-3.5 h-3.5" />
                   <span>Carica</span>
                   <input type="file" accept=".glb,.gltf,.obj" className="hidden" onChange={handleGLBUpload} />
@@ -995,14 +1006,14 @@ export default function Editor3DPage() {
                     },
                     onCancel: () => setDialog(prev => ({...prev, isOpen: false}))
                   })}
-                  className="flex-1 shrink-0 min-w-[90px] bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shadow-sm border border-emerald-500/30"
+                  className="flex-1 shrink-0 min-w-[90px] glass-button py-2.5 text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap hover:text-emerald-400"
                 >
                   <Boxes className="w-3.5 h-3.5" />
                   <span>Stanza</span>
                 </button>
 
                 {/* 3. Mobili */}
-                <label className="flex-1 shrink-0 min-w-[80px] bg-white/5 hover:bg-white/10 text-foreground/80 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap border border-white/10">
+                <label className="flex-1 shrink-0 min-w-[80px] glass-button py-2.5 text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap hover:text-blue-400">
                   <Plus className="w-3.5 h-3.5 text-blue-400" />
                   <span>Mobili</span>
                   <input type="file" accept=".glb,.gltf,.obj" className="hidden" onChange={handleExternal3DUpload} />
@@ -1020,25 +1031,17 @@ export default function Editor3DPage() {
                       scale: [1, 1, 1]
                     });
                   }}
-                  className="flex-1 shrink-0 min-w-[80px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap border border-amber-500/20"
+                  className="flex-1 shrink-0 min-w-[80px] glass-button py-2.5 text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap hover:text-amber-400"
                 >
                   <Layers className="w-3.5 h-3.5" />
                   <span>Luce</span>
                 </button>
 
-                {/* 5. Fix 90° */}
-                <button 
-                  onClick={() => setFixRotation(!fixRotation)}
-                  className={cn("flex-1 shrink-0 min-w-[80px] py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap border", fixRotation ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-white/5 text-foreground/60 border-white/10 hover:bg-white/10")}
-                >
-                  <RotateCw className="w-3.5 h-3.5" />
-                  <span>{fixRotation ? 'Fisso' : 'Fix 90°'}</span>
-                </button>
 
                 {/* 6. App Scanner */}
                 <button 
                   onClick={() => setDialog({ isOpen: true, type: 'alert', title: 'Scanner 3D Gratuito 📱', message: 'Per creare un modello 3D perfetto della tua stanza (gratis), ti consigliamo di usare l\'app "Polycam" o "RealityScan" sul tuo telefono. \n\n1. Scansiona la stanza con l\'app.\n2. Esporta il modello in formato .GLB.\n3. Caricalo qui cliccando il tasto blu "Carica".', onConfirm: () => setDialog(prev => ({...prev, isOpen: false})), onCancel: () => setDialog(prev => ({...prev, isOpen: false})) })}
-                  className="flex-1 shrink-0 min-w-[90px] bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap border border-purple-500/20"
+                  className="flex-1 shrink-0 min-w-[90px] glass-button py-2.5 text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap hover:text-purple-400 rounded-full anim-spring hover:scale-105 active:scale-95"
                 >
                   <Smartphone className="w-3.5 h-3.5" />
                   <span>Scanner</span>
@@ -1224,7 +1227,7 @@ export default function Editor3DPage() {
 
       {/* UNIVERSAL FAB MENU (Rendered globally on top of everything) */}
       {isAnythingSelected && (
-        <div className="fixed right-4 bottom-[200px] md:right-8 md:bottom-8 z-[9999] flex flex-col gap-2 items-end pointer-events-none">
+        <div className="fixed right-4 bottom-[220px] md:right-8 md:bottom-[120px] z-[9999] flex flex-col gap-2 items-end pointer-events-none">
           <AnimatePresence>
             {isMobileMenuExpanded && (
               <motion.div 

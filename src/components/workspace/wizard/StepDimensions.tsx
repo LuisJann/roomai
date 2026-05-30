@@ -78,23 +78,23 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
       <div className="max-w-4xl mx-auto space-y-6">
         
         {/* Meta details row: Room name & Room Type */}
-        <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="glass-card rounded-[32px] p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-foreground/50 mb-1.5">Nome Progetto</label>
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-white/50 mb-2">Nome Progetto</label>
             <input 
               type="text" 
               value={roomName}
               onChange={(e) => setRoomName(e.target.value)}
               placeholder="Es: Camera Matrimoniale, Cucina Rustica" 
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-background text-sm focus:ring-2 focus:ring-foreground outline-none" 
+              className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-black/40 text-sm text-white focus:ring-1 focus:ring-white/30 focus:border-white/30 outline-none placeholder:text-white/30 transition-all" 
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-foreground/50 mb-1.5">Tipo Stanza</label>
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-white/50 mb-2">Tipo Stanza</label>
             <select
               value={roomType}
               onChange={(e) => setRoomType(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-background text-sm focus:ring-2 focus:ring-foreground outline-none"
+              className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-black/40 text-sm text-white focus:ring-1 focus:ring-white/30 focus:border-white/30 outline-none transition-all"
             >
               <option value="soggiorno">Soggiorno / Living Room</option>
               <option value="camera">Camera da Letto</option>
@@ -104,19 +104,19 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-foreground/50 mb-1.5">Unità di misura</label>
-            <div className="grid grid-cols-2 p-1 bg-background border border-gray-200 dark:border-gray-800 rounded-xl">
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-white/50 mb-2">Unità di misura</label>
+            <div className="grid grid-cols-2 p-1.5 bg-black/40 border border-white/10 rounded-2xl">
               <button 
                 type="button"
                 onClick={() => setUnit("cm")}
-                className={cn("py-1.5 text-xs font-semibold rounded-lg transition-colors", unit === "cm" ? "bg-foreground text-background" : "text-foreground/60")}
+                className={cn("py-2 text-xs font-bold rounded-xl transition-all", unit === "cm" ? "bg-white text-black shadow-glow" : "text-white/60 hover:text-white")}
               >
                 Centimetri (cm)
               </button>
               <button 
                 type="button"
                 onClick={() => setUnit("m")}
-                className={cn("py-1.5 text-xs font-semibold rounded-lg transition-colors", unit === "m" ? "bg-foreground text-background" : "text-foreground/60")}
+                className={cn("py-2 text-xs font-bold rounded-xl transition-all", unit === "m" ? "bg-white text-black shadow-glow" : "text-white/60 hover:text-white")}
               >
                 Metri (m)
               </button>
@@ -126,12 +126,12 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
 
         {/* Tab Selection */}
         <div className="flex justify-center">
-          <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-full p-1 inline-flex shadow-sm">
+          <div className="glass-panel p-1.5 inline-flex shadow-sm rounded-full">
             <button
               onClick={() => setMode("manual")}
               className={cn(
-                "px-5 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all",
-                mode === "manual" ? "bg-foreground text-background shadow-sm" : "text-foreground/60 hover:text-foreground"
+                "px-6 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all",
+                mode === "manual" ? "bg-white text-black shadow-glow" : "text-white/60 hover:text-white"
               )}
             >
               <Ruler className="w-4 h-4" /> Misure Manuali
@@ -139,8 +139,8 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
             <button
               onClick={() => setMode("sketch")}
               className={cn(
-                "px-5 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all",
-                mode === "sketch" ? "bg-foreground text-background shadow-sm" : "text-foreground/60 hover:text-foreground"
+                "px-6 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all",
+                mode === "sketch" ? "bg-white text-black shadow-glow" : "text-white/60 hover:text-white"
               )}
             >
               <Pencil className="w-4 h-4" /> Carica Piantina
@@ -148,8 +148,8 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
             <button
               onClick={() => setMode("both")}
               className={cn(
-                "px-5 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all",
-                mode === "both" ? "bg-foreground text-background shadow-sm" : "text-foreground/60 hover:text-foreground"
+                "px-6 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all",
+                mode === "both" ? "bg-white text-black shadow-glow" : "text-white/60 hover:text-white"
               )}
             >
               <Layers className="w-4 h-4" /> Usa Entrambe
@@ -165,15 +165,15 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
             
             {/* Tab A: Manual Inputs */}
             {(mode === "manual" || mode === "both") && (
-              <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm space-y-6">
-                <h3 className="font-semibold text-sm border-b border-gray-100 dark:border-gray-900 pb-2 flex items-center gap-2">
-                  <Ruler className="w-4 h-4 text-blue-500" />
+              <div className="glass-card rounded-[32px] p-8 shadow-sm space-y-6">
+                <h3 className="font-bold text-sm border-b border-white/5 pb-3 flex items-center gap-2 text-white">
+                  <Ruler className="w-4 h-4 text-blue-400" />
                   Misure Generali dell'Ambiente
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-xs font-semibold text-foreground/70 mb-1.5">
+                    <label className="block text-[10px] font-bold tracking-widest uppercase text-white/50 mb-2">
                       Lunghezza {unit === "cm" ? "(cm)" : "(m)"}
                     </label>
                     <input 
@@ -181,12 +181,12 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
                       value={length}
                       onChange={(e) => setLength(e.target.value)}
                       placeholder={unit === "cm" ? "Es: 450" : "Es: 4.5"}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-background text-sm focus:ring-2 focus:ring-foreground outline-none" 
+                      className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-black/40 text-sm text-white focus:ring-1 focus:ring-white/30 focus:border-white/30 outline-none placeholder:text-white/30 transition-all" 
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-semibold text-foreground/70 mb-1.5">
+                    <label className="block text-[10px] font-bold tracking-widest uppercase text-white/50 mb-2">
                       Larghezza {unit === "cm" ? "(cm)" : "(m)"}
                     </label>
                     <input 
@@ -194,12 +194,12 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
                       value={width}
                       onChange={(e) => setWidth(e.target.value)}
                       placeholder={unit === "cm" ? "Es: 350" : "Es: 3.5"}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-background text-sm focus:ring-2 focus:ring-foreground outline-none" 
+                      className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-black/40 text-sm text-white focus:ring-1 focus:ring-white/30 focus:border-white/30 outline-none placeholder:text-white/30 transition-all" 
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-foreground/70 mb-1.5">
+                    <label className="block text-[10px] font-bold tracking-widest uppercase text-white/50 mb-2">
                       Altezza {unit === "cm" ? "(cm)" : "(m)"}
                     </label>
                     <input 
@@ -207,57 +207,57 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
                       placeholder={unit === "cm" ? "Es: 270" : "Es: 2.7"}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-background text-sm focus:ring-2 focus:ring-foreground outline-none" 
+                      className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-black/40 text-sm text-white focus:ring-1 focus:ring-white/30 focus:border-white/30 outline-none placeholder:text-white/30 transition-all" 
                     />
                   </div>
                 </div>
 
                 {/* Openings layout */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-gray-900">
-                  <div className="flex items-center justify-between p-3 bg-background border border-gray-200 dark:border-gray-800 rounded-xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+                  <div className="flex items-center justify-between p-4 bg-black/40 border border-white/10 rounded-2xl">
                     <div>
-                      <h4 className="text-xs font-semibold">Porte / Passaggi</h4>
-                      <p className="text-[10px] text-foreground/50">Numero totale di porte presenti</p>
+                      <h4 className="text-xs font-bold text-white">Porte / Passaggi</h4>
+                      <p className="text-[10px] text-white/50 mt-0.5">Numero totale di porte presenti</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         type="button"
                         onClick={() => setDoors(prev => Math.max(0, prev - 1))}
-                        className="w-8 h-8 rounded-lg bg-surface border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-surface-hover active:scale-95"
+                        className="w-9 h-9 rounded-xl glass-button flex items-center justify-center hover:bg-white/10 active:scale-95 text-white/70 hover:text-white"
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="w-4 h-4" />
                       </button>
-                      <span className="text-sm font-bold w-4 text-center">{doors}</span>
+                      <span className="text-sm font-bold w-4 text-center text-white">{doors}</span>
                       <button 
                         type="button"
                         onClick={() => setDoors(prev => prev + 1)}
-                        className="w-8 h-8 rounded-lg bg-surface border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-surface-hover active:scale-95"
+                        className="w-9 h-9 rounded-xl glass-button flex items-center justify-center hover:bg-white/10 active:scale-95 text-white/70 hover:text-white"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-background border border-gray-200 dark:border-gray-800 rounded-xl">
+                  <div className="flex items-center justify-between p-4 bg-black/40 border border-white/10 rounded-2xl">
                     <div>
-                      <h4 className="text-xs font-semibold">Finestre / Vetrate</h4>
-                      <p className="text-[10px] text-foreground/50">Numero totale di finestre</p>
+                      <h4 className="text-xs font-bold text-white">Finestre / Vetrate</h4>
+                      <p className="text-[10px] text-white/50 mt-0.5">Numero totale di finestre</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         type="button"
                         onClick={() => setWindows(prev => Math.max(0, prev - 1))}
-                        className="w-8 h-8 rounded-lg bg-surface border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-surface-hover active:scale-95"
+                        className="w-9 h-9 rounded-xl glass-button flex items-center justify-center hover:bg-white/10 active:scale-95 text-white/70 hover:text-white"
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="w-4 h-4" />
                       </button>
-                      <span className="text-sm font-bold w-4 text-center">{windows}</span>
+                      <span className="text-sm font-bold w-4 text-center text-white">{windows}</span>
                       <button 
                         type="button"
                         onClick={() => setWindows(prev => prev + 1)}
-                        className="w-8 h-8 rounded-lg bg-surface border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-surface-hover active:scale-95"
+                        className="w-9 h-9 rounded-xl glass-button flex items-center justify-center hover:bg-white/10 active:scale-95 text-white/70 hover:text-white"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -265,14 +265,14 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
 
                 {/* Additional fixed features */}
                 <div className="pt-2">
-                  <label className="block text-xs font-semibold text-foreground/70 mb-1.5">
+                  <label className="block text-[10px] font-bold tracking-widest uppercase text-white/50 mb-2">
                     Nicchie, colonne o ostacoli fissi (Opzionale)
                   </label>
                   <textarea
                     value={features}
                     onChange={(e) => setFeatures(e.target.value)}
                     placeholder="Es: Colonna sporgente nell'angolo destro (30x30 cm). Radiatore sotto la finestra principale. Nicchia profonda 20cm sulla parete a nord."
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-background text-sm focus:ring-2 focus:ring-foreground outline-none min-h-[90px] resize-none"
+                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-black/40 text-sm text-white focus:ring-1 focus:ring-white/30 focus:border-white/30 outline-none placeholder:text-white/30 min-h-[100px] resize-none transition-all"
                   />
                 </div>
               </div>
@@ -280,15 +280,15 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
 
             {/* Tab B: Sketch/Drawing Upload */}
             {(mode === "sketch" || mode === "both") && (
-              <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm space-y-4">
-                <h3 className="font-semibold text-sm border-b border-gray-100 dark:border-gray-900 pb-2 flex items-center gap-2">
-                  <Pencil className="w-4 h-4 text-blue-500" />
+              <div className="glass-card rounded-[32px] p-8 shadow-sm space-y-6">
+                <h3 className="font-bold text-sm border-b border-white/5 pb-3 flex items-center gap-2 text-white">
+                  <Pencil className="w-4 h-4 text-blue-400" />
                   Schema della Stanza Disegnato a Mano
                 </h3>
 
                 {sketch ? (
-                  <div className="flex bg-background border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm relative group p-3 items-center gap-4">
-                    <div className="relative w-20 h-20 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden shrink-0">
+                  <div className="flex glass-card rounded-2xl overflow-hidden shadow-sm relative group p-4 items-center gap-5 hover:border-white/20 transition-colors">
+                    <div className="relative w-24 h-24 bg-black/40 rounded-xl overflow-hidden shrink-0">
                       <Image 
                         src={sketch.url} 
                         alt="Stanza Schema" 
@@ -298,17 +298,17 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-semibold truncate text-foreground/90">{sketch.name}</h4>
-                      <p className="text-[10px] text-foreground/50 mt-0.5">{sketch.size}</p>
-                      <span className="text-[9px] bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400 font-semibold px-2 py-0.5 rounded-full mt-1.5 inline-block">
+                      <h4 className="text-sm font-bold truncate text-white">{sketch.name}</h4>
+                      <p className="text-[10px] text-white/50 mt-1">{sketch.size}</p>
+                      <span className="text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 font-bold px-3 py-1 rounded-full mt-2 inline-block uppercase tracking-wider">
                         Pronto per la scansione AI
                       </span>
                     </div>
                     <button 
                       onClick={() => setSketch(null)}
-                      className="absolute top-3 right-3 text-foreground/40 hover:text-red-500 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                      className="absolute top-4 right-4 text-white/40 hover:text-red-500 p-1.5 hover:bg-white/10 rounded-full transition-colors"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-5 h-5" />
                     </button>
                   </div>
                 ) : (
@@ -323,20 +323,20 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
                       }
                     }}
                     className={cn(
-                      "border-2 border-dashed rounded-xl p-8 text-center transition-all min-h-[180px] flex flex-col items-center justify-center",
+                      "border border-dashed border-white/20 rounded-[24px] p-10 text-center transition-all min-h-[220px] flex flex-col items-center justify-center bg-black/20",
                       isDragging 
-                        ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20" 
-                        : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-surface-hover/30"
+                        ? "border-blue-500 bg-blue-500/10" 
+                        : "hover:border-white/40 hover:bg-white/5"
                     )}
                   >
-                    <Upload className="w-8 h-8 text-foreground/40 mb-3" />
-                    <h4 className="font-semibold text-sm mb-1">Allega uno schema o piantina</h4>
-                    <p className="text-[11px] text-foreground/50 max-w-xs mb-4">
+                    <Upload className="w-8 h-8 text-white/40 mb-3" />
+                    <h4 className="font-bold text-sm mb-1 text-white">Allega uno schema o piantina</h4>
+                    <p className="text-[11px] text-white/50 max-w-xs mb-6">
                       Trascina qui il file dello schema. Accettiamo foto scattate da cellulare o piantine scanned.
                     </p>
                     <button
                       onClick={() => sketchInputRef.current?.click()}
-                      className="bg-foreground text-background px-4 py-2 rounded-full text-xs font-semibold hover:opacity-90 transition-opacity"
+                      className="bg-white text-black px-6 py-3 rounded-full text-xs font-bold shadow-glow hover:scale-[1.02] transition-all anim-spring"
                     >
                       Sfoglia file
                     </button>
@@ -354,51 +354,50 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
 
           </div>
 
-          {/* Tips Side */}
           <div className="lg:col-span-4 space-y-6">
             
             {/* Sketch Tutorial Guidelines (Always show if sketch is visible) */}
             {(mode === "sketch" || mode === "both") && (
-              <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm space-y-3.5">
-                <h4 className="font-semibold text-xs uppercase tracking-wider text-blue-500 flex items-center gap-1.5">
-                  <Pencil className="w-3.5 h-3.5" /> Come disegnare lo schema
+              <div className="glass-card rounded-[32px] p-6 shadow-sm space-y-4">
+                <h4 className="font-bold text-xs uppercase tracking-widest text-blue-400 flex items-center gap-2">
+                  <Pencil className="w-4 h-4" /> Come disegnare lo schema
                 </h4>
                 
-                <ul className="space-y-3 text-[11px] text-foreground/80">
-                  <li className="flex gap-2">
-                    <span className="font-bold text-blue-500 shrink-0">1.</span>
+                <ul className="space-y-3.5 text-[11px] text-white/70 leading-relaxed">
+                  <li className="flex gap-2.5">
+                    <span className="font-bold text-blue-400 shrink-0">1.</span>
                     <span>Disegna la stanza vista dall'alto (schema a scatola o rettangolo).</span>
                   </li>
-                  <li className="flex gap-2">
-                    <span className="font-bold text-blue-500 shrink-0">2.</span>
+                  <li className="flex gap-2.5">
+                    <span className="font-bold text-blue-400 shrink-0">2.</span>
                     <span>Segna le lunghezze di ogni parete in metri o centimetri.</span>
                   </li>
-                  <li className="flex gap-2">
-                    <span className="font-bold text-blue-500 shrink-0">3.</span>
+                  <li className="flex gap-2.5">
+                    <span className="font-bold text-blue-400 shrink-0">3.</span>
                     <span>Traccia e indica la posizione di porte, finestre e caloriferi.</span>
                   </li>
-                  <li className="flex gap-2">
-                    <span className="font-bold text-blue-500 shrink-0">4.</span>
+                  <li className="flex gap-2.5">
+                    <span className="font-bold text-blue-400 shrink-0">4.</span>
                     <span>Scatta la foto tenendo il telefono parallelo al foglio per evitare ombre.</span>
                   </li>
                 </ul>
 
-                <div className="p-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl text-[10px] text-foreground/70 leading-normal flex items-start gap-2">
-                  <Info className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
+                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-[10px] text-white/80 leading-relaxed flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                   <span>Anche uno schizzo rapido o una piantina catastale vanno benissimo, purché le scritte siano leggibili!</span>
                 </div>
               </div>
             )}
 
             {/* Fusion Alert */}
-            <div className="bg-surface border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm space-y-3">
-              <h4 className="font-semibold text-xs uppercase tracking-wider text-green-600 dark:text-green-400">
+            <div className="glass-card border border-green-500/20 rounded-[32px] p-6 shadow-sm space-y-3 bg-green-500/5">
+              <h4 className="font-bold text-[10px] uppercase tracking-widest text-green-400">
                 AI Data Fusion
               </h4>
-              <p className="text-[11px] text-foreground/70 leading-relaxed">
+              <p className="text-[11px] text-white/70 leading-relaxed">
                 Il motore AI di RoomAI sovrappone i dati geometrici e le note inserite qui con le ombre e la prospettiva rilevata nelle foto reali. 
               </p>
-              <p className="text-[11px] text-foreground/70 leading-relaxed">
+              <p className="text-[11px] text-white/70 leading-relaxed">
                 Questo elimina i tipici errori delle app puramente visive, posizionando mobili e ingombri con tolleranza inferiore al centimetro.
               </p>
             </div>
@@ -410,10 +409,10 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
       </div>
 
       {/* Footer Navigation */}
-      <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-800 max-w-4xl mx-auto">
+      <div className="flex justify-between items-center pt-6 border-t border-white/5 max-w-4xl mx-auto">
         <button
           onClick={onBack}
-          className="bg-surface border border-gray-200 dark:border-gray-800 text-foreground px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-surface-hover active:scale-95 transition-all"
+          className="glass-button px-6 py-3.5 rounded-full text-xs font-bold hover:text-white transition-all"
         >
           Indietro
         </button>
@@ -422,13 +421,13 @@ export function StepDimensions({ onNext, onBack }: StepDimensionsProps) {
           onClick={handleNextStep}
           disabled={(mode === "sketch" && !sketch) || (mode === "both" && !sketch)}
           className={cn(
-            "px-8 py-3 rounded-full text-xs font-semibold transition-all shadow-md flex items-center gap-2",
+            "px-8 py-3.5 rounded-full text-xs font-bold shadow-glow flex items-center gap-2 anim-spring disabled:hover:scale-100 active:scale-95",
             ((mode === "sketch" && !sketch) || (mode === "both" && !sketch))
-              ? "bg-foreground/10 text-foreground/30 cursor-not-allowed"
-              : "bg-foreground text-background hover:scale-105 active:scale-95"
+              ? "bg-white/10 text-white/30 cursor-not-allowed shadow-none"
+              : "bg-white text-black hover:scale-[1.02]"
           )}
         >
-          Avvia Elaborazione AI <span className="text-[10px] opacity-60">Step 3 di 3</span>
+          Avvia Elaborazione AI <span className="text-[9px] opacity-60 ml-1">Step 3 di 3</span>
         </button>
       </div>
 

@@ -57,22 +57,22 @@ export function Hero() {
           animate="show"
         >
           <motion.div variants={itemVariants}>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-hover border border-gray-200 dark:border-gray-800 text-sm font-medium mb-8 shadow-sm">
-              <Wand2 className="w-4 h-4 text-blue-500 animate-pulse" />
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-sm font-medium mb-8 shadow-sm text-white/80">
+              <Wand2 className="w-4 h-4 text-blue-400 animate-pulse" />
               L'Interior Design Definitivo
             </span>
           </motion.div>
           
-          <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl font-semibold tracking-tight mb-8 leading-[1.1]">
-            La tua stanza, <br className="hidden md:block"/> riprogettata dalla <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-500 dark:from-white dark:to-gray-500">realtà.</span>
+          <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl font-semibold tracking-tight mb-8 leading-[1.1] text-white">
+            La tua stanza, <br className="hidden md:block"/> riprogettata dalla <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/40">realtà.</span>
           </motion.h1>
           
-          <motion.p variants={itemVariants} className="text-lg md:text-xl text-foreground/70 mb-12 max-w-2xl mx-auto leading-relaxed">
+          <motion.p variants={itemVariants} className="text-lg md:text-xl text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed">
             Dimentica i vecchi software complessi. Scatta una foto, costruisci l'ambiente in 3D con precisione millimetrica e lascia che l'Intelligenza Artificiale arredi lo spazio per te.
           </motion.p>
           
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/workspace/3d-editor" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-foreground text-background px-8 py-4 rounded-full text-base font-medium hover:scale-105 transition-all active:scale-95 shadow-xl shadow-foreground/10 group">
+            <Link href="/workspace/3d-editor" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white text-black px-8 py-4 rounded-full text-base font-bold shadow-glow hover:scale-[1.02] transition-all active:scale-95 group anim-spring">
               <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
               Avvia l'App
             </Link>
@@ -91,13 +91,13 @@ export function Hero() {
               key={i} 
               variants={itemVariants}
               whileHover={{ y: -8, scale: 1.02 }}
-              className="bg-surface border border-gray-200 dark:border-gray-800 p-8 rounded-[2rem] shadow-sm hover:shadow-premium transition-all text-left"
+              className="glass-card p-8 rounded-[32px] text-left border border-white/5"
             >
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${feature.bg} ${feature.color}`}>
                 <feature.icon className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-              <p className="text-foreground/60 leading-relaxed text-sm">
+              <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
+              <p className="text-white/60 leading-relaxed text-sm">
                 {feature.description}
               </p>
             </motion.div>

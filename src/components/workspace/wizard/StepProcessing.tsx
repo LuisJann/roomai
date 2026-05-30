@@ -117,25 +117,25 @@ export function StepProcessing() {
             className="absolute inset-2 border-4 border-gradient rounded-full border-t-blue-500 border-r-purple-500 border-b-transparent border-l-transparent"
           />
           {/* Central Pulsing Icon */}
-          <div className="absolute inset-4 bg-surface dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-full flex items-center justify-center shadow-md">
-            <Sparkles className="w-6 h-6 text-blue-500 animate-pulse" />
+          <div className="absolute inset-4 bg-black/40 border border-white/10 rounded-full flex items-center justify-center shadow-glow">
+            <Sparkles className="w-6 h-6 text-blue-400 animate-pulse" />
           </div>
         </div>
         
-        <h2 className="text-2xl font-bold tracking-tight mb-2">Fusione Dati ed Elaborazione AI</h2>
-        <p className="text-foreground/60 text-sm max-w-md mx-auto">
+        <h2 className="text-2xl font-bold tracking-tight mb-2 text-white">Fusione Dati ed Elaborazione AI</h2>
+        <p className="text-white/60 text-sm max-w-md mx-auto">
           Il nostro modello di intelligenza artificiale spaziale sta analizzando le foto ed inserendo le misure geometriche in scala.
         </p>
 
         {/* Global Progress Bar */}
         <div className="max-w-xs mx-auto mt-6 space-y-2">
-          <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden shadow-inner">
+          <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden shadow-inner border border-white/5">
             <div 
               className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full transition-all duration-300 ease-out"
               style={{ width: `${percentage}%` }}
             />
           </div>
-          <div className="flex justify-between text-[11px] font-semibold text-foreground/50">
+          <div className="flex justify-between text-[11px] font-bold text-white/50 tracking-widest uppercase">
             <span>AVANZAMENTO PIPELINE</span>
             <span>{percentage}%</span>
           </div>
@@ -143,7 +143,7 @@ export function StepProcessing() {
       </div>
 
       {/* Steps List */}
-      <div className="space-y-3.5 bg-surface border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
+      <div className="space-y-4 glass-card rounded-[32px] p-8 shadow-sm">
         {steps.map((step) => {
           const isCompleted = currentStep > step.id;
           const isActive = currentStep === step.id;
@@ -152,15 +152,15 @@ export function StepProcessing() {
           return (
             <div 
               key={step.id} 
-              className={`flex items-start gap-4 p-3 rounded-2xl transition-all duration-300 ${
-                isActive ? "bg-blue-50/50 dark:bg-blue-950/10 border border-blue-100/50 dark:border-blue-900/20" : "border border-transparent"
+              className={`flex items-start gap-4 p-4 rounded-[24px] transition-all duration-300 ${
+                isActive ? "bg-blue-500/10 border border-blue-500/20 shadow-glow" : "border border-transparent"
               }`}
             >
               {/* Step Circle Indicator */}
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-500 ${
-                isCompleted ? "bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400 border border-green-200/50 dark:border-green-800/30" :
-                isActive ? "bg-blue-500 text-white shadow-md shadow-blue-500/20" :
-                "bg-gray-50 text-gray-400 dark:bg-gray-900 border border-gray-100 dark:border-gray-800"
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500 ${
+                isCompleted ? "bg-green-500/20 text-green-400 border border-green-500/30" :
+                isActive ? "bg-white text-black shadow-glow" :
+                "bg-white/5 text-white/40 border border-white/5"
               }`}>
                 {isCompleted ? (
                   <CheckCircle className="w-4 h-4" />
@@ -173,25 +173,25 @@ export function StepProcessing() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h4 className={`text-xs font-bold transition-colors duration-500 ${
-                    isActive ? "text-foreground" : isCompleted ? "text-foreground/80" : "text-foreground/30"
+                    isActive ? "text-white" : isCompleted ? "text-white/80" : "text-white/30"
                   }`}>
                     {step.title}
                   </h4>
                   {isActive && (
-                    <span className="text-[9px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-semibold animate-pulse">
+                    <span className="text-[9px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-widest animate-pulse">
                       In corso...
                     </span>
                   )}
                   {isCompleted && (
-                    <span className="text-[9px] text-green-600 dark:text-green-400 font-semibold flex items-center gap-0.5">
+                    <span className="text-[9px] text-green-400 font-bold uppercase tracking-widest flex items-center gap-0.5">
                       Completato
                     </span>
                   )}
                 </div>
                 
                 {/* Description */}
-                <p className={`text-[11px] mt-0.5 transition-colors duration-500 ${
-                  isActive ? "text-foreground/70" : isCompleted ? "text-foreground/50" : "text-foreground/20"
+                <p className={`text-[11px] mt-1 transition-colors duration-500 ${
+                  isActive ? "text-white/70" : isCompleted ? "text-white/50" : "text-white/20"
                 }`}>
                   {step.detail}
                 </p>

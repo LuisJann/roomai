@@ -51,13 +51,13 @@ export function Features() {
   ];
 
   return (
-    <section className="py-24 px-4 relative z-10 bg-background/50 backdrop-blur-3xl border-t border-white/5">
+    <section className="py-24 px-4 relative z-10 bg-transparent border-t border-white/5">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-white">
             Tutto ciò che ti serve per il <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Design d'Interni</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-white/60 max-w-2xl mx-auto">
             RoomAI unisce la potenza del rendering 3D tradizionale con la velocità dell'Intelligenza Artificiale Generativa, in un unico ambiente di lavoro unificato.
           </p>
         </div>
@@ -70,28 +70,28 @@ export function Features() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="bg-surface border border-border rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group relative flex flex-col h-full"
+              className="glass-card p-6 flex flex-col h-full group relative hover:-translate-y-1 transition-all duration-300"
             >
               <div className={`w-12 h-12 rounded-2xl ${feature.color} border ${feature.border} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                 {feature.icon}
               </div>
               
               <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-lg font-bold">{feature.title}</h3>
+                <h3 className="text-lg font-bold text-white">{feature.title}</h3>
                 {feature.badge && (
-                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30">
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30">
                     {feature.badge}
                   </span>
                 )}
               </div>
               
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+              <p className="text-sm text-white/60 leading-relaxed flex-1">
                 {feature.description}
               </p>
               
               <button 
                 onClick={() => setSelectedFeature(index)}
-                className="mt-6 inline-flex items-center text-sm font-semibold text-foreground/80 hover:text-purple-400 transition-colors cursor-pointer text-left"
+                className="mt-6 inline-flex items-center text-sm font-semibold text-white/80 hover:text-white transition-colors cursor-pointer text-left"
               >
                 Scopri di più <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
               </button>
@@ -116,7 +116,7 @@ export function Features() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="w-full max-w-lg bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden pointer-events-auto"
+                className="w-full max-w-lg glass-panel p-0 overflow-hidden pointer-events-auto rounded-[32px]"
               >
                 <div className={`p-6 pb-0 flex justify-between items-start`}>
                   <div className={`w-14 h-14 rounded-2xl ${features[selectedFeature].color} border ${features[selectedFeature].border} flex items-center justify-center mb-4`}>
@@ -124,27 +124,27 @@ export function Features() {
                   </div>
                   <button 
                     onClick={() => setSelectedFeature(null)}
-                    className="p-2 bg-secondary rounded-full hover:bg-white/10 transition-colors"
+                    className="p-2 glass-button hover:bg-white/10 transition-colors"
                   >
-                    <X className="w-5 h-5 text-foreground/70" />
+                    <X className="w-5 h-5 text-white/70" />
                   </button>
                 </div>
                 <div className="p-6 pt-2">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-2xl font-bold tracking-tight">{features[selectedFeature].title}</h3>
+                    <h3 className="text-2xl font-bold tracking-tight text-white">{features[selectedFeature].title}</h3>
                     {features[selectedFeature].badge && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30">
                         {features[selectedFeature].badge}
                       </span>
                     )}
                   </div>
-                  <p className="text-foreground/70 leading-relaxed text-sm">
+                  <p className="text-white/70 leading-relaxed text-sm">
                     {features[selectedFeature].longDescription}
                   </p>
                   <div className="mt-8">
                     <button 
                       onClick={() => setSelectedFeature(null)}
-                      className="w-full py-3 rounded-xl bg-foreground text-background font-semibold hover:scale-[1.02] active:scale-95 transition-transform"
+                      className="w-full py-3 rounded-full bg-white text-black font-bold hover:scale-[1.02] active:scale-95 transition-transform anim-spring shadow-glow"
                     >
                       Chiudi Scheda
                     </button>

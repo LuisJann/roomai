@@ -101,17 +101,20 @@ export function Sidebar({ isOpen, onClose, isMobileMenu }: SidebarProps) {
   navGroups.push({ title: "Sistema", items: systemItems });
 
   const SidebarContent = (
-    <aside className="w-full h-full border-r border-gray-200 dark:border-gray-800 bg-surface flex flex-col pointer-events-auto shadow-2xl md:shadow-none">
+    <aside className={cn(
+      "w-full h-full flex flex-col pointer-events-auto",
+      !isMobileMenu && "glass-panel rounded-r-[32px] overflow-hidden shadow-premium border-l-0"
+    )}>
       {!isMobileMenu && (
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-foreground text-background flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 rounded-[10px] bg-white text-black flex items-center justify-center shadow-glow">
               <Sparkles className="w-4 h-4" />
             </div>
-            <span className="font-semibold text-lg tracking-tight">RoomAI</span>
+            <span className="font-bold text-lg tracking-tight">RoomAI</span>
           </div>
-          <button className="md:hidden p-1 bg-secondary rounded-lg" onClick={onClose}>
-            <X className="w-5 h-5 text-foreground/70" />
+          <button className="md:hidden p-1.5 glass-button" onClick={onClose}>
+            <X className="w-4 h-4 text-white/70" />
           </button>
         </div>
       )}
@@ -126,14 +129,14 @@ export function Sidebar({ isOpen, onClose, isMobileMenu }: SidebarProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center justify-between px-3 py-3 md:py-2.5 rounded-xl text-sm font-medium transition-all",
+                      "flex items-center justify-between px-3 py-3 md:py-2.5 rounded-2xl text-sm font-medium anim-spring",
                       pathname === item.href
-                        ? "bg-foreground text-background shadow-md scale-[1.02]"
-                        : "text-foreground/70 hover:bg-surface-hover hover:text-foreground hover:scale-[1.02]"
+                        ? "bg-white text-black shadow-[0_8px_16px_rgba(255,255,255,0.15)] scale-[1.04] border border-white/20 z-10 relative"
+                        : "text-white/70 hover:bg-white/10 hover:text-white hover:translate-x-1"
                     )}
                   >
                     <div className="flex items-center gap-3">
-                      <item.icon className="w-5 h-5" />
+                      <item.icon className="w-4 h-4" />
                       {item.label}
                     </div>
                   </Link>
@@ -155,18 +158,18 @@ export function Sidebar({ isOpen, onClose, isMobileMenu }: SidebarProps) {
                       key={item.href}
                       href={item.href}
                       className={cn(
-                        "flex items-center justify-between px-3 py-2.5 md:py-2 rounded-xl text-sm font-medium transition-all",
+                        "flex items-center justify-between px-3 py-2.5 md:py-2 rounded-2xl text-sm font-medium anim-spring",
                         isActive
-                          ? "bg-foreground text-background shadow-md scale-[1.02]"
-                          : "text-foreground/70 hover:bg-surface-hover hover:text-foreground hover:scale-[1.02]"
+                          ? "bg-white text-black shadow-[0_8px_16px_rgba(255,255,255,0.15)] scale-[1.04] border border-white/20 z-10 relative"
+                          : "text-white/70 hover:bg-white/10 hover:text-white hover:translate-x-1"
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        <item.icon className="w-5 h-5" />
+                        <item.icon className="w-4 h-4" />
                         {item.label}
                       </div>
                       {item.badge && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-blue-500/20 text-blue-500 uppercase tracking-widest">
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 uppercase tracking-widest border border-blue-500/30">
                           {item.badge}
                         </span>
                       )}
@@ -179,12 +182,12 @@ export function Sidebar({ isOpen, onClose, isMobileMenu }: SidebarProps) {
         })}
       </nav>
       
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex flex-col gap-2 text-xs text-foreground/50 text-center shrink-0">
+      <div className="p-4 border-t border-white/5 flex flex-col gap-2 text-xs text-white/50 text-center shrink-0 bg-white/5">
         {userEmail ? (
-          <div className="flex flex-col items-center gap-1">
-            <span className="font-semibold text-foreground/80">{userEmail}</span>
-            <span className="text-[10px] uppercase tracking-widest">{isAdmin ? 'Amministratore' : 'Utente Standard'}</span>
-            <button onClick={async () => { await supabase.auth.signOut(); window.location.href='/login'; }} className="text-red-500 hover:text-red-600 mt-2">Esci</button>
+          <div className="flex flex-col items-center gap-1.5">
+            <span className="font-semibold text-white/90">{userEmail}</span>
+            <span className="text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-white/10 bg-white/5">{isAdmin ? 'Amministratore' : 'Utente Standard'}</span>
+            <button onClick={async () => { await supabase.auth.signOut(); window.location.href='/login'; }} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 px-3 py-1.5 rounded-full transition-colors mt-1 anim-spring">Esci</button>
           </div>
         ) : (
           <>
@@ -203,7 +206,7 @@ export function Sidebar({ isOpen, onClose, isMobileMenu }: SidebarProps) {
   return (
     <>
       {/* Desktop Fixed Sidebar */}
-      <div className="hidden md:block fixed left-0 top-0 h-screen z-30 w-64">
+      <div className="hidden md:block fixed left-0 top-0 h-screen z-30 w-72">
         {SidebarContent}
       </div>
     </>

@@ -25,13 +25,14 @@
 
 :root {
   /* Default is dark mode now */
-  --background: #000000; /* OLED Black */
-  --foreground: #f4f4f5; /* Zinc 100 */
-  --surface: #09090b; /* Zinc 950 */
-  --surface-hover: #18181b; /* Zinc 900 */
-  --border: #27272a; /* Zinc 800 */
-  --primary: #3b82f6; /* Blue 500 */
-  --primary-foreground: #ffffff;
+  --background: #0a0a0b; /* Deep Dark */
+  --foreground: #ffffff; /* Quasi bianco */
+  --foreground-muted: rgba(255, 255, 255, 0.6);
+  --surface: rgba(255, 255, 255, 0.07); /* Frost */
+  --surface-hover: rgba(255, 255, 255, 0.15); /* Hover Frost */
+  --border: rgba(255, 255, 255, 0.10);
+  --primary: #e8f4f8; /* Ice Blue / Teal */
+  --primary-foreground: #0a0a0b;
 }
 
 body {
@@ -62,4 +63,57 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
+}
+
+/* Glass Morphism Utilities */
+@layer utilities {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.20);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .glass-button {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 50px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .glass-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.20);
+    transform: scale(1.04);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-button:active {
+    transform: scale(0.96);
+  }
+
+  /* Micro-animations */
+  .anim-spring {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
