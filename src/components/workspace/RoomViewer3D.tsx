@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, Suspense, useRef } from "react";
-import { Object3D, Scene, Box3, Vector3, Group, Mesh, BoxGeometry } from "three"; // <-- IMPORT SPOSTATO IN CIMA
+import { Object3D, Scene, Box3, Vector3, Group, Mesh, BoxGeometry, Shape, ExtrudeGeometry } from "three"; // <-- IMPORT SPOSTATO IN CIMA
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Html, useGLTF, Center, Environment, TransformControls, PivotControls, GizmoHelper, GizmoViewport } from "@react-three/drei";
 import { Ruler, RefreshCw, Layers, Move, RotateCw, Maximize, Magnet, Trash2, Settings2, X } from "lucide-react";
@@ -713,27 +713,151 @@ interface RoomViewer3DProps {
   floorOffset?: number;
 }
 
-function ProceduralRoom({ config, setSelectedId, floorOffset = 0 }: { config: { width: number; length: number; height: number }; setSelectedId: (id: string | null) => void; floorOffset?: number }) {
+function ShapeFloor({ node, isSelected, color, thickness, onClick }: any) {
+  const geometry = React.useMemo(() => {
+    const shape = new Shape();
+    node.points.forEach((p: any, i: number) => {
+      if (i === 0) shape.moveTo(p.x, -p.z);
+      else shape.lineTo(p.x, -p.z);
+    });
+    const geo = new ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false });
+    geo.translate(0, 0, -thickness);
+    geo.rotateX(-Math.PI / 2);
+    return geo;
+  }, [node.points, thickness]);
+
+  return (
+    <mesh position={node.pos} rotation={node.rot} onClick={onClick}>
+      <primitive object={geometry} attach="geometry" />
+      <meshStandardMaterial color={color} roughness={0.9} metalness={0} />
+      {isSelected && (
+        <lineSegments>
+          <edgesGeometry attach="geometry" args={[geometry]} />
+          <lineBasicMaterial color="#3b82f6" linewidth={2} />
+        </lineSegments>
+      )}
+    </mesh>
+  );
+}
+
+function ShapeWall({ node, isSelected, color, thickness, onClick }: any) {
+  const geometry = React.useMemo(() => {
+    const shape = new Shape();
+    const l = node.len;
+    shape.moveTo(-l/2, 0);
+    shape.lineTo(l/2, 0);
+    shape.lineTo(l/2, node.rightHeight);
+    shape.lineTo(-l/2, node.leftHeight);
+    shape.lineTo(-l/2, 0);
+
+    const geo = new ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false });
+    geo.translate(0, 0, -thickness/2);
+    return geo;
+  }, [node.len, node.leftHeight, node.rightHeight, thickness]);
+
+  return (
+    <mesh position={node.pos} rotation={node.rot} onClick={onClick}>
+      <primitive object={geometry} attach="geometry" />
+      <meshStandardMaterial color={color} roughness={0.75} metalness={0} />
+      {isSelected && (
+        <lineSegments>
+          <edgesGeometry attach="geometry" args={[geometry]} />
+          <lineBasicMaterial color="#3b82f6" linewidth={2} />
+        </lineSegments>
+      )}
+    </mesh>
+  );
+}
+
+function ProceduralRoom({ config, setSelectedId, floorOffset = 0 }: { config: any; setSelectedId: (id: string | null) => void; floorOffset?: number }) {
   const nodeTransformations = useWorkspaceStore(state => state.nodeTransformations);
   const setRoomNodes = useWorkspaceStore(state => state.setRoomNodes);
   const selectedObjectId = useWorkspaceStore(state => state.selectedObjectId);
-  const w = config.width;
-  const l = config.length;
-  const h = config.height;
+
+  const { shape = 'rectangular', width: w, length: l, height: h, wingWidth, wingLength, chamferSize, kneeHeight } = config;
   const wallThickness = 0.1;
 
-  const nodes = [
-    // Floor: top surface at y=0 exactly, so it sits flush under the world grid
-    { id: 'floor', name: 'Pavimento', size: [w, wallThickness, l] as [number, number, number], pos: [0, -wallThickness / 2, 0] as [number, number, number], rot: [0, 0, 0] as [number, number, number], color: '#d6cfc5' },
-    { id: 'wall_N', name: 'Parete Nord', size: [w, h, wallThickness] as [number, number, number], pos: [0, h / 2, -l / 2] as [number, number, number], rot: [0, 0, 0] as [number, number, number], color: '#f1f5f9' },
-    { id: 'wall_S', name: 'Parete Sud', size: [w, h, wallThickness] as [number, number, number], pos: [0, h / 2, l / 2] as [number, number, number], rot: [0, 0, 0] as [number, number, number], color: '#f1f5f9' },
-    { id: 'wall_E', name: 'Parete Est', size: [wallThickness, h, l] as [number, number, number], pos: [w / 2, h / 2, 0] as [number, number, number], rot: [0, 0, 0] as [number, number, number], color: '#f1f5f9' },
-    { id: 'wall_W', name: 'Parete Ovest', size: [wallThickness, h, l] as [number, number, number], pos: [-w / 2, h / 2, 0] as [number, number, number], rot: [0, 0, 0] as [number, number, number], color: '#f1f5f9' },
-  ];
+  const nodes = React.useMemo(() => {
+      let points: {x: number, z: number}[] = [];
+      let wallHeights: {l: number, r: number}[] = [];
+      
+      if (shape === 'rectangular') {
+        points = [ {x: -w/2, z: -l/2}, {x: w/2, z: -l/2}, {x: w/2, z: l/2}, {x: -w/2, z: l/2} ];
+        wallHeights = [ {l: h, r: h}, {l: h, r: h}, {l: h, r: h}, {l: h, r: h} ];
+      } else if (shape === 'l-shape') {
+        const ww = wingWidth || w/2;
+        const wl = wingLength || l/2;
+        points = [ 
+           {x: -w/2, z: -l/2}, 
+           {x: w/2, z: -l/2}, 
+           {x: w/2, z: l/2 - wl}, 
+           {x: -w/2 + ww, z: l/2 - wl}, 
+           {x: -w/2 + ww, z: l/2}, 
+           {x: -w/2, z: l/2} 
+        ];
+        for(let i=0; i<6; i++) wallHeights.push({l: h, r: h});
+      } else if (shape === 'chamfered') {
+        const c = chamferSize || Math.min(w, l)/3;
+        points = [ 
+           {x: -w/2, z: -l/2}, 
+           {x: w/2 - c, z: -l/2}, 
+           {x: w/2, z: -l/2 + c}, 
+           {x: w/2, z: l/2}, 
+           {x: -w/2, z: l/2} 
+        ];
+        for(let i=0; i<5; i++) wallHeights.push({l: h, r: h});
+      } else if (shape === 'attic') {
+        const knee = kneeHeight || 1.2;
+        points = [ {x: -w/2, z: -l/2}, {x: w/2, z: -l/2}, {x: w/2, z: l/2}, {x: -w/2, z: l/2} ];
+        wallHeights = [ 
+          {l: h, r: h}, 
+          {l: h, r: knee}, 
+          {l: knee, r: knee}, 
+          {l: knee, r: h} 
+        ];
+      }
 
-  useEffect(() => {
+      const generatedNodes: any[] = [];
+      
+      generatedNodes.push({
+        id: 'floor',
+        name: 'Pavimento',
+        type: 'floor',
+        points: points,
+        pos: [0, -wallThickness/2, 0] as [number,number,number],
+        rot: [0, 0, 0] as [number,number,number],
+        color: '#d6cfc5'
+      });
+
+      for(let i=0; i<points.length; i++) {
+        const p1 = points[i];
+        const p2 = points[(i+1)%points.length];
+        const dx = p2.x - p1.x;
+        const dz = p2.z - p1.z;
+        const len = Math.hypot(dx, dz) + wallThickness;
+        const angle = Math.atan2(-dz, dx); 
+        const cx = (p1.x + p2.x)/2;
+        const cz = (p1.z + p2.z)/2;
+
+        generatedNodes.push({
+          id: `wall_${i}`,
+          name: `Parete ${i+1}`,
+          type: 'wall',
+          len: len,
+          leftHeight: wallHeights[i].l,
+          rightHeight: wallHeights[i].r,
+          pos: [cx, 0, cz] as [number,number,number],
+          rot: [0, angle, 0] as [number,number,number],
+          color: '#f1f5f9'
+        });
+      }
+
+      return generatedNodes;
+  }, [shape, w, l, h, wingWidth, wingLength, chamferSize, kneeHeight]);
+
+  React.useEffect(() => {
     setRoomNodes(nodes.map(n => ({ id: n.id, name: n.name })));
-  }, [w, l, h]);
+  }, [nodes, setRoomNodes]);
 
   return (
     <group position={[0, floorOffset, 0]}>
@@ -743,31 +867,31 @@ function ProceduralRoom({ config, setSelectedId, floorOffset = 0 }: { config: { 
         if (!isVisible) return null;
         
         const isSelected = selectedObjectId === node.id;
+        const color = t?.color || (isSelected ? "#93c5fd" : node.color);
         
-        return (
-          <mesh 
-            key={node.id} 
-            position={node.pos} 
-            rotation={node.rot} 
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedId(node.id);
-            }}
-          >
-            <boxGeometry args={node.size} />
-            <meshStandardMaterial 
-              color={t?.color || (isSelected ? "#93c5fd" : node.color)} 
-              roughness={node.id === 'floor' ? 0.9 : 0.75} 
-              metalness={0}
+        if (node.type === 'floor') {
+          return (
+            <ShapeFloor 
+              key={node.id}
+              node={node}
+              isSelected={isSelected}
+              color={color}
+              thickness={wallThickness}
+              onClick={(e: any) => { e.stopPropagation(); setSelectedId(node.id); }}
             />
-            {isSelected && (
-              <lineSegments>
-                <edgesGeometry attach="geometry" args={[new BoxGeometry(...node.size)]} />
-                <lineBasicMaterial color="#3b82f6" linewidth={2} />
-              </lineSegments>
-            )}
-          </mesh>
-        );
+          );
+        } else {
+          return (
+            <ShapeWall 
+              key={node.id}
+              node={node}
+              isSelected={isSelected}
+              color={color}
+              thickness={wallThickness}
+              onClick={(e: any) => { e.stopPropagation(); setSelectedId(node.id); }}
+            />
+          );
+        }
       })}
     </group>
   );

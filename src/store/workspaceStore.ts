@@ -78,11 +78,16 @@ export interface HistoryState {
 }
 
 export interface CustomRoomConfig {
+  shape?: 'rectangular' | 'l-shape' | 'chamfered' | 'attic';
   width: number;
   length: number;
   height: number;
   doorsCount: number;
   windowsCount: number;
+  wingWidth?: number;
+  wingLength?: number;
+  chamferSize?: number;
+  kneeHeight?: number;
 }
 
 export interface WorkspaceState {

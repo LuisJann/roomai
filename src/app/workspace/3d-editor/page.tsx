@@ -510,6 +510,85 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
 };
 
 
+// Aggiungiamo un piccolo componente per la preview 2D
+function RoomPreview2D({ config }: { config: any }) {
+  const { shape = 'rectangular', width, length, wingWidth, wingLength, chamferSize } = config;
+  const w = parseFloat(width) || 4;
+  const l = parseFloat(length) || 5;
+  const ww = parseFloat(wingWidth) || w/2;
+  const wl = parseFloat(wingLength) || l/2;
+  const c = parseFloat(chamferSize) || Math.min(w, l)/3;
+
+  let points: {x: number, y: number}[] = [];
+  if (shape === 'rectangular' || shape === 'attic') {
+    points = [ {x: 0, y: 0}, {x: w, y: 0}, {x: w, y: l}, {x: 0, y: l} ];
+  } else if (shape === 'l-shape') {
+    points = [ {x: 0, y: 0}, {x: w, y: 0}, {x: w, y: l - wl}, {x: ww, y: l - wl}, {x: ww, y: l}, {x: 0, y: l} ];
+  } else if (shape === 'chamfered') {
+    points = [ {x: 0, y: 0}, {x: w - c, y: 0}, {x: w, y: c}, {x: w, y: l}, {x: 0, y: l} ];
+  }
+
+  const minX = Math.min(...points.map(p => p.x));
+  const maxX = Math.max(...points.map(p => p.x));
+  const minY = Math.min(...points.map(p => p.y));
+  const maxY = Math.max(...points.map(p => p.y));
+  
+  const spanX = maxX - minX || 1;
+  const spanY = maxY - minY || 1;
+  const maxSpan = Math.max(spanX, spanY);
+  const margin = maxSpan * 0.25; // increased margin for text
+  const vbMinX = minX - margin;
+  const vbMinY = minY - margin;
+  const vbWidth = spanX + margin * 2;
+  const vbHeight = spanY + margin * 2;
+  
+  const polygonPoints = points.map(p => `${p.x},${p.y}`).join(' ');
+
+  const offset = maxSpan * 0.08;
+  const fontSize = maxSpan * 0.06;
+  const tColor = "#60a5fa"; // blue-400
+
+  return (
+    <div className="w-full aspect-video sm:aspect-[2/1] bg-black/20 rounded-xl border border-white/5 flex items-center justify-center p-2 mb-2">
+      <svg 
+        viewBox={`${vbMinX} ${vbMinY} ${vbWidth} ${vbHeight}`} 
+        className="w-full h-full drop-shadow-md"
+        style={{ overflow: 'visible' }}
+      >
+        <polygon 
+          points={polygonPoints} 
+          fill="#3b82f6" fillOpacity="0.2" 
+          stroke="#3b82f6" strokeWidth={maxSpan * 0.015} strokeLinejoin="round" 
+        />
+        
+        {/* Etichette Base */}
+        <text x={w/2} y={-offset} fill={tColor} fontSize={fontSize} fontWeight="bold" textAnchor="middle">X (Largh.)</text>
+        <text x={-offset} y={l/2} fill={tColor} fontSize={fontSize} fontWeight="bold" textAnchor="middle" transform={`rotate(-90, ${-offset}, ${l/2})`}>Z (Prof.)</text>
+
+        {shape === 'attic' && (
+          <>
+            {/* Visual hint for the attic roof slope */}
+            <line x1={0} y1={l/2} x2={w} y2={l/2} stroke="#3b82f6" strokeWidth={maxSpan * 0.01} strokeDasharray="0.1,0.1" opacity="0.5" />
+            <text x={w/2} y={l/4} fill="#3b82f6" fontSize={fontSize} textAnchor="middle" opacity="0.8">Tetto Alto (Y)</text>
+            <text x={w/2} y={l*0.75} fill="#3b82f6" fontSize={fontSize} textAnchor="middle" opacity="0.8">Ginocchiello</text>
+          </>
+        )}
+
+        {shape === 'l-shape' && (
+          <>
+            <text x={ww/2} y={l + offset*1.2} fill={tColor} fontSize={fontSize} fontWeight="bold" textAnchor="middle">Largh. Nicchia</text>
+            <text x={ww + offset*0.8} y={l - wl/2} fill={tColor} fontSize={fontSize} fontWeight="bold" textAnchor="middle" transform={`rotate(-90, ${ww + offset*0.8}, ${l - wl/2})`}>Prof. Nicchia</text>
+          </>
+        )}
+
+        {shape === 'chamfered' && (
+          <text x={w - c/2 + offset*1.5} y={c/2 - offset*0.5} fill={tColor} fontSize={fontSize} fontWeight="bold" textAnchor="middle">Taglio</text>
+        )}
+      </svg>
+    </div>
+  );
+}
+
 export default function Editor3DPage() {
   // Config states
   const [length, setLength] = useState(450);
@@ -612,10 +691,10 @@ export default function Editor3DPage() {
     title: string;
     message: string;
     inputValue?: string;
-    customRoomConfig?: { width: string; length: string; height: string; doorsCount: string; windowsCount: string; };
+    customRoomConfig?: { shape?: string; width: string; length: string; height: string; doorsCount: string; windowsCount: string; wingWidth?: string; wingLength?: string; chamferSize?: string; kneeHeight?: string; };
     onConfirm?: (val?: any) => void;
     onCancel?: () => void;
-  }>({ isOpen: false, type: 'alert', title: '', message: '', inputValue: '', customRoomConfig: { width: '4', length: '5', height: '2.8', doorsCount: '1', windowsCount: '1' } });
+  }>({ isOpen: false, type: 'alert', title: '', message: '', inputValue: '', customRoomConfig: { shape: 'rectangular', width: '4', length: '5', height: '2.8', doorsCount: '1', windowsCount: '1', wingWidth: '2', wingLength: '2', chamferSize: '1.5', kneeHeight: '1.2' } });
 
   const closeDialog = () => setDialog(prev => ({ ...prev, isOpen: false }));
 
@@ -997,7 +1076,7 @@ export default function Editor3DPage() {
                       type: 'custom_room', 
                       title: 'Crea Stanza Manuale', 
                       message: 'Inserisci le dimensioni in metri per generare una stanza procedurale (pavimento + 4 pareti).',
-                      customRoomConfig: { width: '4', length: '5', height: '2.8', doorsCount: '1', windowsCount: '1' },
+                      customRoomConfig: { shape: 'rectangular', width: '4', length: '5', height: '2.8', doorsCount: '1', windowsCount: '1', wingWidth: '2', wingLength: '2', chamferSize: '1.5', kneeHeight: '1.2' },
                       onConfirm: (config) => {
                         const w = parseFloat(config.width) || 4;
                         const l = parseFloat(config.length) || 5;
@@ -1005,14 +1084,20 @@ export default function Editor3DPage() {
                         const d = parseInt(config.doorsCount) || 0;
                         const wind = parseInt(config.windowsCount) || 0;
                         
+                        const shape = config.shape || 'rectangular';
+                        const wingWidth = parseFloat(config.wingWidth) || w/2;
+                        const wingLength = parseFloat(config.wingLength) || l/2;
+                        const chamferSize = parseFloat(config.chamferSize) || Math.min(w, l)/3;
+                        const kneeHeight = parseFloat(config.kneeHeight) || 1.2;
+                        
                         const store = useWorkspaceStore.getState();
-                        store.setCustomRoomConfig({ width: w, length: l, height: h, doorsCount: d, windowsCount: wind });
+                        store.setCustomRoomConfig({ shape: shape as any, width: w, length: l, height: h, doorsCount: d, windowsCount: wind, wingWidth, wingLength, chamferSize, kneeHeight });
                         
                         for(let i=0; i<d; i++) {
                           store.add3DObject({
                             id: `door_${Date.now()}_${i}`,
                             type: 'door',
-                            position: [w/2, 0, 0],
+                            position: [-w/2 + 0.1, 0, 0],
                             rotation: [0, Math.PI / 2, 0],
                             scale: [1, 1, 1]
                           });
@@ -1021,8 +1106,8 @@ export default function Editor3DPage() {
                           store.add3DObject({
                             id: `window_${Date.now()}_${i}`,
                             type: 'window',
-                            position: [0, 1.0, -l/2],
-                            rotation: [0, 0, 0],
+                            position: [-w/2 + 0.1, 1.0, 0],
+                            rotation: [0, Math.PI / 2, 0],
                             scale: [1, 1, 1]
                           });
                         }
@@ -1101,7 +1186,7 @@ export default function Editor3DPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-sm bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden pointer-events-auto"
+              className="relative w-[92vw] max-w-[360px] sm:max-w-sm bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden pointer-events-auto"
             >
               <div className="p-6">
                 <h3 className="text-xl font-bold tracking-tight mb-2">{dialog.title}</h3>
@@ -1128,7 +1213,7 @@ export default function Editor3DPage() {
                       <h4 className="font-bold text-foreground text-base">Creare o Caricare una Stanza</h4>
                       <p>Usa i pulsanti in basso a sinistra per iniziare:</p>
                       <ul className="list-disc pl-5 space-y-1">
-                        <li><Boxes className="w-3 h-3 inline mr-1 text-emerald-500" /><b>Crea Stanza:</b> Genera una stanza vuota definendo le dimensioni (Larghezza, Profondità, Altezza) e il numero di porte o finestre.</li>
+                        <li><Boxes className="w-3 h-3 inline mr-1 text-emerald-500" /><b>Crea Stanza:</b> Genera una stanza vuota definendo la forma (Rettangolare, a L, Smussata o Mansarda) e le dimensioni tramite i campi e la comoda <b>Preview 2D</b>. Inserisci anche il numero di porte o finestre.</li>
                         <li><Upload className="w-3 h-3 inline mr-1 text-blue-500" /><b>Carica Stanza:</b> Importa un modello 3D completo della tua stanza in formato <code>.glb</code> o <code>.gltf</code> (es. creato con un'app scanner 3D sul telefono).</li>
                       </ul>
                     </div>
@@ -1170,8 +1255,32 @@ export default function Editor3DPage() {
                 )}
 
                 {dialog.type === 'custom_room' && dialog.customRoomConfig && (
-                  <div className="flex flex-col gap-4 mb-6">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-4 mb-6 max-h-[60vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2">
+                    {/* Template Selector */}
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-bold text-foreground/70">Forma della stanza</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {['rectangular', 'l-shape', 'chamfered', 'attic'].map(shape => (
+                          <button
+                            key={shape}
+                            onClick={() => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, shape: shape as any } }))}
+                            className={cn(
+                              "py-2 px-2 rounded-xl text-xs font-semibold border transition-all text-center truncate",
+                              dialog.customRoomConfig?.shape === shape || (!dialog.customRoomConfig?.shape && shape === 'rectangular')
+                                ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
+                                : "bg-secondary/50 border-border text-foreground/70 hover:bg-secondary"
+                            )}
+                          >
+                            {shape === 'rectangular' ? 'Rettangolare' : shape === 'l-shape' ? 'Nicchia (L)' : shape === 'chamfered' ? 'Smussata' : 'Mansarda'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Preview 2D della stanza */}
+                    <RoomPreview2D config={dialog.customRoomConfig} />
+
+                    <div className="flex items-center gap-3 mt-2">
                       <label className="w-24 text-xs font-bold text-foreground/70">Larghezza (X)</label>
                       <input 
                         type="number" step="0.1"
@@ -1191,6 +1300,45 @@ export default function Editor3DPage() {
                       />
                       <span className="text-xs text-foreground/50 w-4">m</span>
                     </div>
+
+                    {dialog.customRoomConfig?.shape === 'l-shape' && (
+                      <>
+                        <div className="flex items-center gap-3">
+                          <label className="w-24 text-xs font-bold text-foreground/70">Largh. Nicchia</label>
+                          <input 
+                            type="number" step="0.1"
+                            value={dialog.customRoomConfig.wingWidth}
+                            onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, wingWidth: e.target.value } }))}
+                            className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                          />
+                          <span className="text-xs text-foreground/50 w-4">m</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <label className="w-24 text-xs font-bold text-foreground/70">Prof. Nicchia</label>
+                          <input 
+                            type="number" step="0.1"
+                            value={dialog.customRoomConfig.wingLength}
+                            onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, wingLength: e.target.value } }))}
+                            className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                          />
+                          <span className="text-xs text-foreground/50 w-4">m</span>
+                        </div>
+                      </>
+                    )}
+
+                    {dialog.customRoomConfig?.shape === 'chamfered' && (
+                      <div className="flex items-center gap-3">
+                        <label className="w-24 text-xs font-bold text-foreground/70">Taglio Angolo</label>
+                        <input 
+                          type="number" step="0.1"
+                          value={dialog.customRoomConfig.chamferSize}
+                          onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, chamferSize: e.target.value } }))}
+                          className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                        />
+                        <span className="text-xs text-foreground/50 w-4">m</span>
+                      </div>
+                    )}
+
                     <div className="flex items-center gap-3">
                       <label className="w-24 text-xs font-bold text-foreground/70">Altezza (Y)</label>
                       <input 
@@ -1201,6 +1349,20 @@ export default function Editor3DPage() {
                       />
                       <span className="text-xs text-foreground/50 w-4">m</span>
                     </div>
+
+                    {dialog.customRoomConfig?.shape === 'attic' && (
+                      <div className="flex items-center gap-3">
+                        <label className="w-24 text-xs font-bold text-foreground/70">Ginocchiello</label>
+                        <input 
+                          type="number" step="0.1"
+                          value={dialog.customRoomConfig.kneeHeight}
+                          onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, kneeHeight: e.target.value } }))}
+                          className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                        />
+                        <span className="text-xs text-foreground/50 w-4">m</span>
+                      </div>
+                    )}
+
                     <div className="flex items-center gap-3">
                       <label className="w-24 text-xs font-bold text-foreground/70">Porte</label>
                       <input 
