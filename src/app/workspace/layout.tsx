@@ -20,7 +20,8 @@ export default function WorkspaceLayout({
   // The 3D Editor and the Explore Detail page use their own full-screen layouts
   const isEditor = pathname === "/workspace/3d-editor";
   const isExploreDetail = pathname.startsWith("/workspace/explore/") && pathname !== "/workspace/explore";
-  const hideGlobalMobileNav = isEditor || isExploreDetail;
+  const hideLogo = isEditor || isExploreDetail;
+  const hideMenu = isExploreDetail;
 
   const [menuHeight, setMenuHeight] = useState(560);
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
@@ -115,7 +116,7 @@ export default function WorkspaceLayout({
       {/* Liquid Mobile Hamburger Menu */}
       <>
         {/* Logo on the left (visible on mobile) */}
-        {!hideGlobalMobileNav && (
+        {!hideLogo && (
           <div className="md:hidden fixed top-6 left-6 z-40 flex items-center gap-2 bg-surface/80 backdrop-blur-xl px-4 py-3 rounded-full border border-white/10 shadow-premium pointer-events-none">
             <div className="w-6 h-6 rounded-lg bg-foreground text-background flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5" />
@@ -124,7 +125,7 @@ export default function WorkspaceLayout({
           </div>
         )}
 
-        {!hideGlobalMobileNav && (
+        {!hideMenu && (
           <div className={`md:hidden fixed z-[80] flex justify-end ${isEditor ? "top-[9px] right-4" : "top-6 right-6"}`}>
             <motion.div
             animate={{

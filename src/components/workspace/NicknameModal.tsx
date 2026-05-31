@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Sparkles, Loader2, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { GlassAvatar, AVATARS_DATA } from "@/components/ui/GlassAvatar";
 
 export function NicknameModal({ user, onComplete }: { user: any, onComplete: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -94,21 +95,30 @@ export function NicknameModal({ user, onComplete }: { user: any, onComplete: () 
 
                 <div className="space-y-2 text-left">
                   <label className="text-[11px] font-bold tracking-widest text-white/50 uppercase px-1">Scegli il tuo Avatar</label>
-                  <div className="flex gap-3 overflow-x-auto custom-scrollbar pb-2 pt-1 px-1">
-                    {[1, 2, 3, 4, 5, 6].map((id) => (
-                      <button
-                        key={id}
-                        onClick={() => setAvatarId(id)}
-                        className={`relative shrink-0 rounded-full transition-all duration-300 ${avatarId === id ? 'ring-2 ring-white scale-110 shadow-glow' : 'opacity-50 hover:opacity-100 hover:scale-105'}`}
-                      >
-                        <img src={`/avatars/avatar_${id}.png`} alt={`Avatar ${id}`} className="w-14 h-14 rounded-full object-cover" />
-                        {avatarId === id && (
-                          <div className="absolute -bottom-1 -right-1 bg-white text-black p-0.5 rounded-full">
-                            <Check className="w-3 h-3" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
+                  <div className="flex gap-4 overflow-x-auto py-3 px-3 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    {AVATARS_DATA.map((avatar) => {
+                      const isSelected = avatarId === avatar.id;
+                      return (
+                        <button
+                          key={avatar.id}
+                          onClick={() => setAvatarId(avatar.id)}
+                          className={`relative shrink-0 transition-all duration-500 outline-none rounded-full
+                            ${isSelected ? '' : 'opacity-60 hover:opacity-100 hover:scale-105'}`}
+                        >
+                          <GlassAvatar 
+                            id={avatar.id} 
+                            isSelected={isSelected}
+                            className="w-12 h-12 sm:w-14 sm:h-14"
+                            iconClassName="w-5 h-5 sm:w-6 sm:h-6"
+                          />
+                          {isSelected && (
+                            <div className="absolute -bottom-1 -right-1 bg-white text-black p-0.5 rounded-full z-20 shadow-lg">
+                              <Check className="w-3 h-3" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { it } from "date-fns/locale";
+import { GlassAvatar } from "@/components/ui/GlassAvatar";
 
 const RoomViewer3D = dynamic(
   () => import("@/components/workspace/RoomViewer3D").then((mod) => mod.RoomViewer3D),
@@ -394,7 +395,11 @@ export default function ReadOnlyProjectPage() {
           <div className="glass-panel px-3 py-2 sm:px-5 sm:py-3 rounded-[16px] sm:rounded-[20px] flex flex-col justify-center shadow-lg min-w-0">
             <h1 className="font-semibold text-white/95 text-sm sm:text-base tracking-wide leading-none mb-1.5 sm:mb-2 truncate">{projectData.name}</h1>
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <img src={`/avatars/avatar_${social.author_avatar_id || 1}.png`} alt="Avatar" className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border border-white/10 shadow-sm shrink-0" />
+              <GlassAvatar 
+                id={social.author_avatar_id || 1}
+                className="w-4 h-4 sm:w-5 sm:h-5 shadow-sm shrink-0"
+                iconClassName="w-2 h-2 sm:w-2.5 sm:h-2.5"
+              />
               <span className="text-[10px] sm:text-[11px] font-medium text-white/80 tracking-wide truncate">{social.author_nickname || 'Anonimo'}</span>
               <span className="hidden sm:inline text-[10px] text-white/30 px-0.5 shrink-0">•</span>
               <span className="hidden sm:inline text-[11px] text-white/50 truncate">{formatDistanceToNow(new Date(projectData.created_at), { addSuffix: true, locale: it })}</span>
@@ -442,7 +447,11 @@ export default function ReadOnlyProjectPage() {
               <div className="glass-panel border border-white/10 rounded-[16px] p-4">
                 <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-2">Stai segnalando:</p>
                 <div className="flex items-center gap-2 mb-2">
-                  <img src={`/avatars/avatar_${reportingComment.author_avatar_id || 1}.png`} alt="Avatar" className="w-6 h-6 rounded-full border border-white/10" />
+                  <GlassAvatar 
+                    id={reportingComment.author_avatar_id || 1}
+                    className="w-6 h-6 shadow-sm shrink-0"
+                    iconClassName="w-3 h-3"
+                  />
                   <span className="font-semibold text-sm text-white/90">{reportingComment.author_nickname || 'Anonimo'}</span>
                 </div>
                 <p className="text-sm text-white/70 italic border-l-2 border-white/20 pl-3">"{reportingComment.text}"</p>
@@ -531,8 +540,14 @@ export default function ReadOnlyProjectPage() {
           ) : (
             sortedComments.map((comment: any) => (
               <div key={comment.id} id={`comment-${comment.id}`} className="flex flex-col gap-2">
-                <div className={`flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-[20px] transition-all duration-1000 ease-in-out ${comment.id === highlightedId ? 'bg-yellow-500/20 border border-yellow-500/50 shadow-[0_0_30px_rgba(234,179,8,0.3)] scale-[1.02] z-10' : (comment.is_deleted ? 'bg-white/[0.03] border border-white/5 opacity-60 grayscale' : 'bg-white/[0.03] border border-white/5 hover:border-white/10 hover:bg-white/[0.05] shadow-sm')}`}>
-                  <img src={comment.is_deleted ? '/avatars/avatar_1.png' : `/avatars/avatar_${comment.author_avatar_id || 1}.png`} alt="Avatar" className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-white/10 shrink-0 object-cover ${!comment.is_deleted && 'shadow-lg'}`} />
+                <div className={`flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-[20px] transition-all duration-1000 ease-in-out ${comment.id === highlightedId ? 'bg-yellow-500/20 border border-yellow-500/50 shadow-[0_0_30px_rgba(234,179,8,0.3)] scale-[1.02] z-10' : (comment.is_deleted ? ('bg-white/[0.03] border border-white/5 ' + (isAdmin ? 'opacity-80' : 'opacity-60 grayscale')) : 'bg-white/[0.03] border border-white/5 hover:border-white/10 hover:bg-white/[0.05] shadow-sm')}`}>
+                  <div className="shrink-0 pt-0.5">
+                    <GlassAvatar 
+                      id={comment.is_deleted ? 1 : (comment.author_avatar_id || 1)}
+                      className={`w-8 h-8 sm:w-10 sm:h-10 shrink-0 ${comment.is_deleted ? 'opacity-50 grayscale' : 'shadow-lg'}`}
+                      iconClassName="w-4 h-4 sm:w-5 sm:h-5"
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline justify-between mb-1 gap-2">
                       <span className="font-semibold text-[13px] sm:text-sm text-white/95 truncate">{comment.is_deleted ? (comment.deleted_by_admin ? '[Moderato]' : '[Cancellato]') : (comment.author_nickname || 'Anonimo')}</span>
@@ -606,10 +621,15 @@ export default function ReadOnlyProjectPage() {
                         </button>
 
                         {comment.replies.slice(0, visibleRepliesCount).map((reply: any) => (
-                          <div key={reply.id} id={`comment-${reply.id}`} className={`flex gap-3 p-3 rounded-[16px] relative group transition-all duration-1000 ease-in-out ${reply.id === highlightedId ? 'bg-yellow-500/20 border border-yellow-500/50 shadow-[0_0_30px_rgba(234,179,8,0.3)] scale-[1.02] z-10' : 'bg-white/[0.02] border border-white/5'}`}>
+                          <div key={reply.id} id={`comment-${reply.id}`} className={`flex gap-3 p-3 rounded-[16px] relative group transition-all duration-1000 ease-in-out ${reply.id === highlightedId ? 'bg-yellow-500/20 border border-yellow-500/50 shadow-[0_0_30px_rgba(234,179,8,0.3)] scale-[1.02] z-10' : (reply.is_deleted ? ('bg-white/[0.02] border border-white/5 ' + (isAdmin ? 'opacity-80' : 'opacity-60 grayscale')) : 'bg-white/[0.02] border border-white/5')}`}>
                             <div className="absolute -left-6 top-6 w-5 h-px bg-white/10" />
-                            
-                            <img src={reply.is_deleted ? '/avatars/avatar_1.png' : `/avatars/avatar_${reply.author_avatar_id || 1}.png`} alt="Avatar" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-white/10 shadow-sm shrink-0 object-cover" />
+                            <div className="shrink-0 pt-0.5">
+                              <GlassAvatar 
+                                id={reply.is_deleted ? 1 : (reply.author_avatar_id || 1)}
+                                className={`w-6 h-6 sm:w-8 sm:h-8 shadow-sm shrink-0 ${reply.is_deleted ? 'opacity-50 grayscale' : ''}`}
+                                iconClassName="w-3 h-3 sm:w-4 sm:h-4"
+                              />
+                            </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-baseline gap-2 mb-0.5">
                                 <span className="font-semibold text-[12px] sm:text-[13px] text-white/90 truncate">{reply.is_deleted ? (reply.deleted_by_admin ? '[Moderato]' : '[Cancellato]') : (reply.author_nickname || 'Anonimo')}</span>

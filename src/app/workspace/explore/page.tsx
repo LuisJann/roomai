@@ -7,6 +7,7 @@ import { Heart, MessageCircle, User, Loader2, Compass, Box, ArrowDownWideNarrow,
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { it } from "date-fns/locale";
+import { GlassAvatar } from "@/components/ui/GlassAvatar";
 
 interface PublicProject {
   id: string;
@@ -183,7 +184,11 @@ export default function ExplorePage() {
 
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <img src={`/avatars/avatar_${project.social.author_avatar_id || 1}.png`} alt="Avatar" className="w-6 h-6 rounded-full border border-white/10" />
+                      <GlassAvatar 
+                        id={project.social.author_avatar_id || 1}
+                        className="w-6 h-6 shadow-sm shrink-0"
+                        iconClassName="w-3 h-3"
+                      />
                       <span className="text-xs font-medium text-foreground/70">{project.social.author_nickname || 'Anonimo'}</span>
                     </div>
                     <span className="text-[10px] text-foreground/40 font-medium">
