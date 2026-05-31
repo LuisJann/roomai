@@ -17,8 +17,10 @@ export default function WorkspaceLayout({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const pathname = usePathname();
 
-  // The 3D Editor uses its own full-screen layout, so we don't want the standard padding
+  // The 3D Editor and the Explore Detail page use their own full-screen layouts
   const isEditor = pathname === "/workspace/3d-editor";
+  const isExploreDetail = pathname.startsWith("/workspace/explore/") && pathname !== "/workspace/explore";
+  const hideGlobalMobileNav = isEditor || isExploreDetail;
 
   const [menuHeight, setMenuHeight] = useState(560);
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
@@ -113,7 +115,7 @@ export default function WorkspaceLayout({
       {/* Liquid Mobile Hamburger Menu */}
       <>
         {/* Logo on the left (visible on mobile) */}
-        {!isEditor && (
+        {!hideGlobalMobileNav && (
           <div className="md:hidden fixed top-6 left-6 z-40 flex items-center gap-2 bg-surface/80 backdrop-blur-xl px-4 py-3 rounded-full border border-white/10 shadow-premium pointer-events-none">
             <div className="w-6 h-6 rounded-lg bg-foreground text-background flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5" />
@@ -122,8 +124,9 @@ export default function WorkspaceLayout({
           </div>
         )}
 
-        <div className={`md:hidden fixed z-[80] flex justify-end ${isEditor ? "top-[9px] right-4" : "top-6 right-6"}`}>
-          <motion.div
+        {!hideGlobalMobileNav && (
+          <div className={`md:hidden fixed z-[80] flex justify-end ${isEditor ? "top-[9px] right-4" : "top-6 right-6"}`}>
+            <motion.div
             animate={{
               width: isMobileOpen ? 280 : (isEditor ? 34 : 56),
               height: isMobileOpen ? menuHeight : (isEditor ? 34 : 56),
@@ -193,6 +196,7 @@ export default function WorkspaceLayout({
             </AnimatePresence>
           </motion.div>
         </div>
+        )}
       </>
 
       {/* The Sidebar is fixed on desktop */}
@@ -202,7 +206,7 @@ export default function WorkspaceLayout({
       
       <main className={cn(
         "flex-1 flex flex-col min-h-0",
-        isEditor ? "p-0 overflow-hidden md:pl-72" : "px-4 pb-4 pt-24 md:py-6 md:pr-6 md:pl-72 overflow-y-auto"
+        (isEditor || isExploreDetail) ? "p-0 overflow-hidden md:pl-72" : "px-4 pb-4 pt-24 md:py-6 md:pr-6 md:pl-72 overflow-y-auto"
       )}>
         {children}
       </main>

@@ -505,12 +505,12 @@ export default function ReadOnlyProjectPage() {
       )}
 
       <div 
-        className={`absolute inset-0 bg-black/40 backdrop-blur-sm z-[65] transition-opacity duration-500 ${showComments ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} 
+        className={`absolute inset-0 bg-black/40 backdrop-blur-sm z-[85] transition-opacity duration-500 ${showComments ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} 
         onClick={() => setShowComments(false)}
       />
 
-      <div className={`absolute top-0 right-0 h-full w-full sm:w-[400px] max-w-full bg-black/60 backdrop-blur-[40px] border-l border-white/10 z-[70] flex flex-col transition-transform duration-500 shadow-2xl ${showComments ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="pt-[88px] sm:pt-6 pb-5 px-5 sm:px-6 border-b border-white/10 flex justify-between items-center shrink-0 bg-black/20">
+      <div className={`absolute top-0 right-0 h-full w-full sm:w-[400px] max-w-full bg-black/60 backdrop-blur-[40px] border-l border-white/10 z-[90] flex flex-col transition-transform duration-500 shadow-2xl ${showComments ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="p-5 sm:p-6 border-b border-white/10 flex justify-between items-center shrink-0 bg-black/20">
           <h2 className="text-lg font-bold text-white/95 flex items-center gap-2">
             <MessageCircle className="w-5 h-5 text-blue-400" />
             Commenti ({social.comments?.length || 0})
