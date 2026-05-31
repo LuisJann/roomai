@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Image as ImageIcon, History, Settings, Sparkles, Lightbulb, Box, X, Shield } from "lucide-react";
+import { Home, Image as ImageIcon, History, Settings, Sparkles, Lightbulb, Box, X, Shield, Globe } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -24,23 +24,34 @@ interface SidebarProps {
   isMobileMenu?: boolean;
 }
 
+// Module-level cache to prevent flicker on mobile remounts
+let cachedUserEmail: string | null = null;
+let cachedIsAdmin: boolean = false;
+let cachedPermissions: any = null;
+let isCached = false;
+
 export function Sidebar({ isOpen, onClose, isMobileMenu }: SidebarProps) {
   const pathname = usePathname();
   const prevPathname = useRef(pathname);
   const supabase = createClient();
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [permissions, setPermissions] = useState<any>({});
+  const [userEmail, setUserEmail] = useState<string | null>(cachedUserEmail);
+  const [isAdmin, setIsAdmin] = useState(cachedIsAdmin);
+  const [permissions, setPermissions] = useState<any>(cachedPermissions || {});
 
   useEffect(() => {
     async function loadUser() {
+      if (isCached) return;
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        setUserEmail(user.email ?? null);
+        cachedUserEmail = user.email ?? null;
+        setUserEmail(cachedUserEmail);
         const { data: roleData } = await supabase.from('users_roles').select('role, permissions').eq('id', user.id).single();
         if (roleData) {
-          setIsAdmin(roleData.role === 'admin');
-          setPermissions(roleData.permissions || {});
+          cachedIsAdmin = roleData.role === 'admin';
+          cachedPermissions = roleData.permissions || {};
+          setIsAdmin(cachedIsAdmin);
+          setPermissions(cachedPermissions);
+          isCached = true;
         }
       }
     }
@@ -91,6 +102,11 @@ export function Sidebar({ isOpen, onClose, isMobileMenu }: SidebarProps) {
   if (designItems.length > 0) {
     navGroups.push({ title: "Progettazione 3D", items: designItems });
   }
+
+  // Community
+  const communityItems = [];
+  communityItems.push({ icon: Globe, label: "Esplora Community", href: "/workspace/explore", badge: "NEW" });
+  navGroups.push({ title: "Community", items: communityItems });
 
   // Sistema
   const systemItems = [];

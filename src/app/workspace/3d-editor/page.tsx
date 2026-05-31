@@ -691,8 +691,10 @@ export default function Editor3DPage() {
     title: string;
     message: string;
     inputValue?: string;
+    showPublicToggle?: boolean;
+    isPublic?: boolean;
     customRoomConfig?: { shape?: string; width: string; length: string; height: string; doorsCount: string; windowsCount: string; wingWidth?: string; wingLength?: string; chamferSize?: string; kneeHeight?: string; };
-    onConfirm?: (val?: any) => void;
+    onConfirm?: (val?: any, isPublic?: boolean) => void;
     onCancel?: () => void;
   }>({ isOpen: false, type: 'alert', title: '', message: '', inputValue: '', customRoomConfig: { shape: 'rectangular', width: '4', length: '5', height: '2.8', doorsCount: '1', windowsCount: '1', wingWidth: '2', wingLength: '2', chamferSize: '1.5', kneeHeight: '1.2' } });
 
@@ -757,13 +759,25 @@ export default function Editor3DPage() {
       title: 'Salva Progetto',
       message: 'Inserisci il nome del progetto da salvare (verrà creata una copia nel tuo account):',
       inputValue: defaultName,
-      onConfirm: (val) => {
+      showPublicToggle: true,
+      isPublic: false,
+      onConfirm: (val, isPublic) => {
         if (val) {
+          let thumbnailDataUrl: string | undefined = undefined;
+          try {
+            const canvas = document.querySelector('canvas');
+            if (canvas) {
+              thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+            }
+          } catch (e) {
+            console.error('Error capturing thumbnail:', e);
+          }
+
           saveProject(val, {
             addedObjects,
             nodeTransformations,
             custom3DModelUrl
-          });
+          }, isPublic, thumbnailDataUrl);
           addNotification({ message: 'Progetto salvato con successo nello Storico!', type: 'success' });
         }
         closeDialog();
@@ -1193,18 +1207,38 @@ export default function Editor3DPage() {
                 <p className="text-foreground/70 text-sm mb-6 leading-relaxed">{dialog.message}</p>
                 
                 {dialog.type === 'prompt' && (
-                  <input 
-                    type="text" 
-                    value={dialog.inputValue}
-                    onChange={(e) => setDialog(prev => ({ ...prev, inputValue: e.target.value }))}
-                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 mb-6"
-                    placeholder="Scrivi qui..."
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') dialog.onConfirm?.(dialog.inputValue);
-                      if (e.key === 'Escape') dialog.onCancel?.();
-                    }}
-                  />
+                  <div className="mb-6">
+                    <input 
+                      type="text" 
+                      value={dialog.inputValue}
+                      onChange={(e) => setDialog(prev => ({ ...prev, inputValue: e.target.value }))}
+                      className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 mb-4"
+                      placeholder="Scrivi qui..."
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') dialog.onConfirm?.(dialog.inputValue, dialog.isPublic);
+                        if (e.key === 'Escape') dialog.onCancel?.();
+                      }}
+                    />
+                    {dialog.showPublicToggle && (
+                      <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 hover:bg-blue-500/10 transition-colors">
+                        <div className="relative">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only" 
+                            checked={!!dialog.isPublic}
+                            onChange={(e) => setDialog(prev => ({ ...prev, isPublic: e.target.checked }))}
+                          />
+                          <div className={`block w-10 h-6 rounded-full transition-colors ${dialog.isPublic ? 'bg-blue-500' : 'bg-foreground/20'}`}></div>
+                          <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${dialog.isPublic ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-foreground">Rendi Pubblico 🌍</span>
+                          <span className="text-[10px] text-foreground/50">Permetti ad altri designer di esplorare questo progetto.</span>
+                        </div>
+                      </label>
+                    )}
+                  </div>
                 )}
 
                 {dialog.type === 'tutorial' && (
@@ -1400,7 +1434,11 @@ export default function Editor3DPage() {
                       if (dialog.type === 'tutorial' || dialog.type === 'alert') {
                         closeDialog();
                       } else {
-                        dialog.onConfirm?.(dialog.type === 'prompt' ? dialog.inputValue : (dialog.type === 'custom_room' ? dialog.customRoomConfig : undefined));
+                        if (dialog.type === 'prompt') {
+                          dialog.onConfirm?.(dialog.inputValue, dialog.isPublic);
+                        } else {
+                          dialog.onConfirm?.(dialog.type === 'custom_room' ? dialog.customRoomConfig : undefined);
+                        }
                       }
                     }}
                     className={cn(

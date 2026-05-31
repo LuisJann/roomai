@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { NicknameModal } from "@/components/workspace/NicknameModal";
 
 export default function WorkspaceLayout({
   children,
@@ -21,6 +22,7 @@ export default function WorkspaceLayout({
 
   const [menuHeight, setMenuHeight] = useState(560);
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const updateHeight = () => setMenuHeight(Math.min(window.innerHeight - 80, 700));
@@ -39,6 +41,8 @@ export default function WorkspaceLayout({
         setHasAccess(false);
         return;
       }
+
+      setUser(user);
 
       const { data: roleData } = await supabase.from('users_roles').select('role, permissions').eq('id', user.id).single();
       
@@ -95,6 +99,17 @@ export default function WorkspaceLayout({
 
   return (
     <div className={`flex bg-background flex-col md:flex-row ${isEditor ? "h-[100dvh] overflow-hidden" : "min-h-screen"}`}>
+      <NicknameModal user={user} onComplete={() => {
+        // Refresh user data if needed, or simply let the modal close.
+        const updateUserData = async () => {
+          const { createClient } = await import('@/utils/supabase/client');
+          const supabase = createClient();
+          const { data } = await supabase.auth.getUser();
+          if (data.user) setUser(data.user);
+        };
+        updateUserData();
+      }} />
+      
       {/* Liquid Mobile Hamburger Menu */}
       <>
         {/* Logo on the left (visible on mobile) */}
@@ -107,7 +122,7 @@ export default function WorkspaceLayout({
           </div>
         )}
 
-        <div className={`md:hidden fixed z-[60] flex justify-end ${isEditor ? "top-[9px] right-4" : "top-6 right-6"}`}>
+        <div className={`md:hidden fixed z-[80] flex justify-end ${isEditor ? "top-[9px] right-4" : "top-6 right-6"}`}>
           <motion.div
             animate={{
               width: isMobileOpen ? 280 : (isEditor ? 34 : 56),
@@ -123,7 +138,7 @@ export default function WorkspaceLayout({
             className={cn(
               "overflow-hidden cursor-pointer pointer-events-auto",
               (!isEditor || isMobileOpen) 
-                ? "glass-panel !bg-black/60 !border-white/20 shadow-[0_16px_60px_rgba(0,0,0,0.8)]" 
+                ? "glass-panel !bg-black/85 !backdrop-blur-[40px] !border-white/20 shadow-[0_16px_60px_rgba(0,0,0,0.8)]" 
                 : "glass-button flex items-center justify-center border border-white/10 bg-white/5 hover:bg-white/10"
             )}
             style={{ maxWidth: 'calc(100vw - 32px)', originX: 1, originY: 0 }}

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { Shield, Users, HardDrive, Loader2, Check } from "lucide-react";
+import { Shield, Users, HardDrive, Loader2, Check, AlertTriangle, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
@@ -65,10 +66,29 @@ export default function AdminDashboard() {
         <div className="p-3 bg-purple-500/10 text-purple-500 rounded-2xl shrink-0">
           <Shield className="w-8 h-8" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Pannello Amministratore</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Gestisci gli accessi degli utenti e monitora i consumi del Database.</p>
         </div>
+        <Link 
+          href="/admin/moderation"
+          className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full bg-yellow-500/10 text-yellow-500 font-bold hover:bg-yellow-500/20 transition-colors border border-yellow-500/20"
+        >
+          <AlertTriangle className="w-4 h-4" />
+          Centro Moderazione
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+
+      <div className="sm:hidden mb-8">
+        <Link 
+          href="/admin/moderation"
+          className="flex w-full justify-center items-center gap-2 px-5 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 font-bold hover:bg-yellow-500/20 transition-colors border border-yellow-500/20"
+        >
+          <AlertTriangle className="w-4 h-4" />
+          Centro Moderazione
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
 
       {/* Stats Widget */}

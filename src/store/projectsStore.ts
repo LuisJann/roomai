@@ -16,7 +16,7 @@ interface ProjectsState {
   projects: SavedProject[];
   isLoading: boolean;
   fetchProjects: () => Promise<void>;
-  saveProject: (name: string, workspaceData: Partial<WorkspaceState>) => Promise<void>;
+  saveProject: (name: string, workspaceData: Partial<WorkspaceState>, isPublic?: boolean, thumbnail?: string) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
 }
 
@@ -31,7 +31,7 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => ({
     // Deprecated: history page now fetches directly from Supabase.
   },
 
-  saveProject: async (name, workspaceData) => {
+  saveProject: async (name, workspaceData, isPublic = false, thumbnail) => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -55,11 +55,26 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => ({
       });
     }
 
+    const projectData: any = { workspaceData: safeWorkspaceData };
+    if (thumbnail) {
+      projectData.thumbnail = thumbnail;
+    }
+    
+    if (isPublic) {
+      projectData.social = {
+        is_public: true,
+        author_nickname: user.user_metadata?.nickname || 'Anonimo',
+        author_avatar_id: user.user_metadata?.avatar_id || 1,
+        likes: [],
+        comments: []
+      };
+    }
+
     try {
       const { error } = await supabase.from('projects').insert({
         user_id: user.id,
         name,
-        data: { workspaceData: safeWorkspaceData }
+        data: projectData
       });
 
       if (error) {

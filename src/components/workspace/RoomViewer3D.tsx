@@ -248,7 +248,7 @@ function ModelLoader({ url, OrbitControlsRef, fixRotation = false, floorOffset =
       </group>
         
         {/* TransformControls per il nodo GLB interno selezionato */}
-        {selectedNode && (
+        {selectedNode && !isReadOnly && (
           <>
             <TransformControls
               object={selectedNode}
@@ -574,6 +574,7 @@ function InteractiveObjects({
   const setNodeDimension = useWorkspaceStore(state => state.setNodeDimension);
   const nodeTransformations = useWorkspaceStore(state => state.nodeTransformations);
   const transformMode = useWorkspaceStore(state => state.transformMode);
+  const isReadOnly = useWorkspaceStore(state => state.isReadOnly);
   const setTransformMode = useWorkspaceStore(state => state.setTransformMode);
   
   const [selectedNode, setSelectedNode] = useState<Object3D | null>(null);
@@ -604,7 +605,7 @@ function InteractiveObjects({
 
         return (
           <group key={obj.id}>
-            {isSelected && selectedNode && (
+            {isSelected && selectedNode && !isReadOnly && (
               <TransformControls
                 object={selectedNode}
                 mode={transformMode}
@@ -942,6 +943,7 @@ export function RoomViewer3D({
       
       <Canvas 
         className="relative z-20 w-full h-full"
+        gl={{ preserveDrawingBuffer: true }}
         camera={{ position: [lenM * 1.5, heiM * 1.8, widM * 1.5], fov: 50 }}
         onPointerMissed={() => {
           setSelectedId(null);

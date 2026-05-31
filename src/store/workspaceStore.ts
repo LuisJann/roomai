@@ -147,6 +147,8 @@ export interface WorkspaceState {
 
   transformMode: "translate" | "rotate" | "scale";
   setTransformMode: (mode: "translate" | "rotate" | "scale") => void;
+  isReadOnly: boolean;
+  setReadOnly: (isReadOnly: boolean) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
@@ -171,8 +173,10 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       history: [],
       loadedProjectOwner: null,
       transformMode: "translate",
+      isReadOnly: false,
       
       setTransformMode: (mode) => set({ transformMode: mode }),
+      setReadOnly: (isReadOnly) => set({ isReadOnly }),
       furnitureCatalog: [
         {
           id: 'catalog_sofa',

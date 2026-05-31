@@ -11,6 +11,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [avatarId, setAvatarId] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -28,6 +30,10 @@ export default function LoginPage() {
         setError("La password deve contenere almeno 6 caratteri.");
         return;
       }
+      if (!nickname.trim()) {
+        setError("Devi scegliere un nickname.");
+        return;
+      }
     }
 
     setLoading(true);
@@ -36,7 +42,16 @@ export default function LoginPage() {
 
     const { error } = isLoginMode 
       ? await supabase.auth.signInWithPassword({ email: safeEmail, password })
-      : await supabase.auth.signUp({ email: safeEmail, password });
+      : await supabase.auth.signUp({ 
+          email: safeEmail, 
+          password,
+          options: {
+            data: {
+              nickname: nickname.trim(),
+              avatar_id: avatarId
+            }
+          }
+        });
 
     if (error) {
       setError(error.message);
@@ -117,10 +132,42 @@ export default function LoginPage() {
             </div>
           )}
 
+          {!isLoginMode && (
+            <>
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold tracking-widest text-white/50 uppercase px-1">Nickname</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    className="w-full bg-black/40 border border-white/10 rounded-2xl py-3.5 px-4 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all placeholder:text-white/30"
+                    placeholder="Il tuo nome da designer"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold tracking-widest text-white/50 uppercase px-1">Scegli il tuo Avatar</label>
+                <div className="flex gap-3 overflow-x-auto custom-scrollbar pb-2 pt-1 px-1">
+                  {[1, 2, 3, 4, 5, 6].map((id) => (
+                    <button
+                      key={id}
+                      onClick={() => setAvatarId(id)}
+                      className={`relative shrink-0 rounded-full transition-all duration-300 ${avatarId === id ? 'ring-2 ring-white scale-110' : 'opacity-50 hover:opacity-100 hover:scale-105'}`}
+                    >
+                      <img src={`/avatars/avatar_${id}.png`} alt={`Avatar ${id}`} className="w-12 h-12 rounded-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
           <div className="flex flex-col gap-4 pt-8">
             <button
               onClick={handleAuth}
-              disabled={loading || !email || !password || (!isLoginMode && !passwordConfirm)}
+              disabled={loading || !email || !password || (!isLoginMode && (!passwordConfirm || !nickname.trim()))}
               className="w-full bg-white text-black py-3.5 rounded-full text-sm font-bold shadow-glow hover:scale-[1.02] active:scale-95 anim-spring disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
