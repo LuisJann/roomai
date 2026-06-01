@@ -78,7 +78,7 @@ export interface HistoryState {
 }
 
 export interface CustomRoomConfig {
-  shape?: 'rectangular' | 'l-shape' | 'chamfered' | 'attic';
+  shape?: 'rectangular' | 'l-shape' | 'chamfered' | 'attic' | 't-shape' | 'u-shape' | 'alcove' | 'double-pitch' | 'bow-window';
   width: number;
   length: number;
   height: number;
@@ -88,6 +88,14 @@ export interface CustomRoomConfig {
   wingLength?: number;
   chamferSize?: number;
   kneeHeight?: number;
+  ridgeHeight?: number;
+  cutoutWidth?: number;
+  cutoutLength?: number;
+  alcoveWidth?: number;
+  alcoveDepth?: number;
+  alcoveOffset?: number;
+  bowWidth?: number;
+  bowDepth?: number;
 }
 
 export interface WorkspaceState {
@@ -101,6 +109,7 @@ export interface WorkspaceState {
   notifications: AppNotification[];
   pendingTasks: PendingTask[];
   custom3DModelUrl: string | null;
+  cloudModelUrl: string | null;
   customRoomConfig: CustomRoomConfig | null;
   selectedObjectId: string | null;
   addedObjects: Interactive3DObject[];
@@ -119,6 +128,7 @@ export interface WorkspaceState {
   saveRender: (url: string) => void;
   deleteRender: (url: string) => void;
   setCustom3DModelUrl: (url: string | null) => void;
+  setCloudModelUrl: (url: string | null) => void;
   setCustomRoomConfig: (config: CustomRoomConfig | null) => void;
   
   add3DObject: (obj: Interactive3DObject) => void;
@@ -164,6 +174,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       notifications: [],
       pendingTasks: [],
       custom3DModelUrl: null,
+      cloudModelUrl: null,
       customRoomConfig: null,
       selectedObjectId: null,
       addedObjects: [],
@@ -232,6 +243,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       saveRender: (url: string) => set((state: WorkspaceState) => ({ savedRenders: [...state.savedRenders, url] })),
       deleteRender: (url: string) => set((state: WorkspaceState) => ({ savedRenders: state.savedRenders.filter(u => u !== url) })),
       setCustom3DModelUrl: (url: string | null) => set({ custom3DModelUrl: url }),
+      setCloudModelUrl: (url: string | null) => set({ cloudModelUrl: url }),
       setCustomRoomConfig: (config: CustomRoomConfig | null) => set({ customRoomConfig: config }),
       setLoadedProjectOwner: (owner: string | null) => set({ loadedProjectOwner: owner }),
 
@@ -304,6 +316,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           addedObjects: [],
           nodeTransformations: {},
           custom3DModelUrl: null,
+          cloudModelUrl: null,
           customRoomConfig: null,
           roomNodes: [],
           nodeDimensions: {}

@@ -22,6 +22,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useProjectsStore } from "@/store/projectsStore";
 import { set as idbSet } from "idb-keyval";
+import { createClient } from "@/utils/supabase/client";
+import { Cloud, AlertTriangle, Globe, Lightbulb, User } from "lucide-react";
 
 const ObjectsMenuContent = () => {
   const nodeDimensions = useWorkspaceStore(state => state.nodeDimensions);
@@ -526,6 +528,23 @@ function RoomPreview2D({ config }: { config: any }) {
     points = [ {x: 0, y: 0}, {x: w, y: 0}, {x: w, y: l - wl}, {x: ww, y: l - wl}, {x: ww, y: l}, {x: 0, y: l} ];
   } else if (shape === 'chamfered') {
     points = [ {x: 0, y: 0}, {x: w - c, y: 0}, {x: w, y: c}, {x: w, y: l}, {x: 0, y: l} ];
+  } else if (shape === 't-shape') {
+    points = [ {x: 0, y: 0}, {x: w, y: 0}, {x: w, y: wl}, {x: w/2 + ww/2, y: wl}, {x: w/2 + ww/2, y: l}, {x: w/2 - ww/2, y: l}, {x: w/2 - ww/2, y: wl}, {x: 0, y: wl} ];
+  } else if (shape === 'u-shape') {
+    const cw = parseFloat(config.cutoutWidth) || w/3;
+    const cl = parseFloat(config.cutoutLength) || l/3;
+    points = [ {x: 0, y: 0}, {x: w, y: 0}, {x: w, y: l}, {x: w/2 + cw/2, y: l}, {x: w/2 + cw/2, y: l - cl}, {x: w/2 - cw/2, y: l - cl}, {x: w/2 - cw/2, y: l}, {x: 0, y: l} ];
+  } else if (shape === 'alcove') {
+    const aw = parseFloat(config.alcoveWidth) || w/3;
+    const ad = parseFloat(config.alcoveDepth) || l/4;
+    const ao = parseFloat(config.alcoveOffset) || 0;
+    points = [ {x: 0, y: 0}, {x: w/2 + ao - aw/2, y: 0}, {x: w/2 + ao - aw/2, y: -ad}, {x: w/2 + ao + aw/2, y: -ad}, {x: w/2 + ao + aw/2, y: 0}, {x: w, y: 0}, {x: w, y: l}, {x: 0, y: l} ];
+  } else if (shape === 'double-pitch') {
+    points = [ {x: 0, y: 0}, {x: w/2, y: 0}, {x: w, y: 0}, {x: w, y: l}, {x: w/2, y: l}, {x: 0, y: l} ];
+  } else if (shape === 'bow-window') {
+    const bw = parseFloat(config.bowWidth) || w/3;
+    const bd = parseFloat(config.bowDepth) || l/4;
+    points = [ {x: 0, y: 0}, {x: w, y: 0}, {x: w, y: l}, {x: w/2 + bw/2 + bd, y: l}, {x: w/2 + bw/2, y: l + bd}, {x: w/2 - bw/2, y: l + bd}, {x: w/2 - bw/2 - bd, y: l}, {x: 0, y: l} ];
   }
 
   const minX = Math.min(...points.map(p => p.x));
@@ -584,6 +603,12 @@ function RoomPreview2D({ config }: { config: any }) {
         {shape === 'chamfered' && (
           <text x={w - c/2 + offset*1.5} y={c/2 - offset*0.5} fill={tColor} fontSize={fontSize} fontWeight="bold" textAnchor="middle">Taglio</text>
         )}
+        {shape === 'double-pitch' && (
+          <>
+            <line x1={w/2} y1={0} x2={w/2} y2={l} stroke="#3b82f6" strokeWidth={maxSpan * 0.015} strokeDasharray="0.1,0.1" opacity="0.8" />
+            <text x={w/2 + offset} y={l/2} fill={tColor} fontSize={fontSize} fontWeight="bold" textAnchor="start">Colmo</text>
+          </>
+        )}
       </svg>
     </div>
   );
@@ -622,6 +647,7 @@ export default function Editor3DPage() {
   const updateNodeTransformation = useWorkspaceStore(state => state.updateNodeTransformation);
   const custom3DModelUrl = useWorkspaceStore(state => state.custom3DModelUrl);
   const setCustom3DModelUrl = useWorkspaceStore(state => state.setCustom3DModelUrl);
+  const customRoomConfig = useWorkspaceStore(state => state.customRoomConfig);
   
   const saveProject = useProjectsStore(state => state.saveProject);
   const loadedProjectOwner = useWorkspaceStore(state => state.loadedProjectOwner);
@@ -689,7 +715,7 @@ export default function Editor3DPage() {
     isOpen: boolean;
     type: 'prompt' | 'confirm' | 'alert' | 'custom_room' | 'tutorial';
     title: string;
-    message: string;
+    message: React.ReactNode;
     inputValue?: string;
     showPublicToggle?: boolean;
     isPublic?: boolean;
@@ -751,13 +777,66 @@ export default function Editor3DPage() {
     e.target.value = '';
   };
 
-  const handleSaveProject = () => {
+  const handleSaveProject = async () => {
     const defaultName = loadedProjectOwner ? `Copia da ${loadedProjectOwner}` : "Nuovo Progetto";
+    
+    let statsMessage = null;
+    let warningMessage = null;
+
+    // Fetch quota stats always
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      let maxScans = 5;
+      let isAdmin = false;
+      let publicScansCount = 0;
+      try {
+        const { data: settingsData } = await supabase.from('app_settings').select('value').eq('key', 'max_public_scans').single();
+        if (settingsData && settingsData.value) maxScans = parseInt(settingsData.value);
+        const { data: roleData } = await supabase.from('users_roles').select('role').eq('id', user.id).single();
+        if (roleData && roleData.role === 'admin') isAdmin = true;
+        
+        const { data: userProjects } = await supabase.from('projects').select('data').eq('user_id', user.id);
+        publicScansCount = (userProjects || []).filter((p:any) => p.data?.social?.is_public === true && p.data?.workspaceData?.cloudModelUrl).length;
+      } catch(e) {}
+
+      const isProcedural = !custom3DModelUrl;
+
+      statsMessage = (
+        <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex gap-3 text-left">
+          <Cloud className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <span className="font-bold text-blue-300">Quota Scanner:</span> Hai pubblicato {publicScansCount} modelli 3D su {maxScans} disponibili.
+            {isAdmin && <span className="block mt-1 text-xs text-blue-400/80">(Sei Admin, la quota per te non si applica)</span>}
+            {isProcedural && <span className="block mt-1 text-xs text-blue-300/80 border-t border-blue-500/20 pt-1">(Questo è un modello matematico/procedurale, il salvataggio è illimitato e non consuma la quota dei file 3D)</span>}
+          </div>
+        </div>
+      );
+
+      // Warning only if it's a local scanner file
+      if (custom3DModelUrl?.startsWith('idb://')) {
+        warningMessage = (
+          <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex gap-3 text-left">
+            <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+            <div className="text-sm text-yellow-100">
+              <span className="font-bold text-yellow-400">NOTA PER MODELLI SCANSIONATI:</span> Se scegli di salvarlo come "Privato", il file 3D rimarrà accessibile esclusivamente da questo dispositivo fisico per risparmiare spazio in cloud.
+            </div>
+          </div>
+        );
+      }
+    }
+
     setDialog({
       isOpen: true,
       type: 'prompt',
       title: 'Salva Progetto',
-      message: 'Inserisci il nome del progetto da salvare (verrà creata una copia nel tuo account):',
+      message: (
+        <div className="flex flex-col gap-2">
+          <p>Inserisci il nome del progetto da salvare (verrà creata una copia nel tuo account):</p>
+          {warningMessage}
+          {statsMessage}
+        </div>
+      ),
       inputValue: defaultName,
       showPublicToggle: true,
       isPublic: false,
@@ -776,7 +855,8 @@ export default function Editor3DPage() {
           saveProject(val, {
             addedObjects,
             nodeTransformations,
-            custom3DModelUrl
+            custom3DModelUrl,
+            customRoomConfig
           }, isPublic, thumbnailDataUrl);
           addNotification({ message: 'Progetto salvato con successo nello Storico!', type: 'success' });
         }
@@ -809,14 +889,9 @@ export default function Editor3DPage() {
     <div className="w-full h-full relative bg-background text-foreground flex flex-col overflow-hidden">
       
       {loadedProjectOwner && (
-        <div className="bg-amber-500 text-amber-950 px-4 py-2 text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 z-50 shadow-md">
-          <span className="text-center">⚠️ Stai visualizzando il progetto di: <span className="underline">{loadedProjectOwner}</span>. Se salvi, verrà creata una COPIA.</span>
-          <button 
-            onClick={handleNewProject}
-            className="bg-amber-950 hover:bg-black text-amber-500 px-4 py-1.5 rounded-full shadow-sm transition-colors uppercase tracking-wider text-[10px]"
-          >
-            Chiudi e Inizia Nuovo
-          </button>
+        <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 py-2 px-4 rounded-full flex items-center justify-center gap-2 mb-4 mx-4 shadow-lg backdrop-blur-sm text-sm">
+          <User className="w-4 h-4 shrink-0" />
+          <span className="text-center">Stai visualizzando il progetto di: <span className="underline">{loadedProjectOwner}</span>. Se salvi, verrà creata una COPIA.</span>
         </div>
       )}
 
@@ -1203,8 +1278,10 @@ export default function Editor3DPage() {
               className="relative w-[92vw] max-w-[360px] sm:max-w-sm bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden pointer-events-auto"
             >
               <div className="p-6">
-                <h3 className="text-xl font-bold tracking-tight mb-2">{dialog.title}</h3>
-                <p className="text-foreground/70 text-sm mb-6 leading-relaxed">{dialog.message}</p>
+                <h3 className="text-xl font-bold tracking-tight mb-4">{dialog.title}</h3>
+                <div className="text-foreground/80 text-sm mb-6 leading-relaxed">
+                  {dialog.message}
+                </div>
                 
                 {dialog.type === 'prompt' && (
                   <div className="mb-6">
@@ -1221,7 +1298,13 @@ export default function Editor3DPage() {
                       }}
                     />
                     {dialog.showPublicToggle && (
-                      <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 hover:bg-blue-500/10 transition-colors">
+                      <label className="mb-6 p-4 rounded-xl bg-foreground/5 border border-white/5 flex items-center justify-between cursor-pointer">
+                        <div>
+                          <span className="flex items-center text-sm font-bold text-foreground">
+                            Rendi Pubblico <Globe className="w-4 h-4 ml-1.5 text-blue-400" />
+                          </span>
+                          <p className="text-xs text-foreground/50 mt-1 pr-4">Permetti ad altri designer di esplorare questo progetto.</p>
+                        </div>
                         <div className="relative">
                           <input 
                             type="checkbox" 
@@ -1231,10 +1314,6 @@ export default function Editor3DPage() {
                           />
                           <div className={`block w-10 h-6 rounded-full transition-colors ${dialog.isPublic ? 'bg-blue-500' : 'bg-foreground/20'}`}></div>
                           <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${dialog.isPublic ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-bold text-foreground">Rendi Pubblico 🌍</span>
-                          <span className="text-[10px] text-foreground/50">Permetti ad altri designer di esplorare questo progetto.</span>
                         </div>
                       </label>
                     )}
@@ -1257,7 +1336,7 @@ export default function Editor3DPage() {
                       <p>Usa il menu in basso al centro:</p>
                       <ul className="list-disc pl-5 space-y-1">
                         <li><Plus className="w-3 h-3 inline mr-1 text-blue-500" /><b>Mobili:</b> Apri il catalogo per aggiungere arredi o elementi strutturali.</li>
-                        <li>💡 <b>Luce:</b> Aggiungi punti luce alla scena. Puoi regolarne l'intensità e il colore (calda, naturale, fredda) dalla barra laterale.</li>
+                        <li className="flex gap-2 items-start"><Lightbulb className="w-4 h-4 mt-0.5 text-yellow-400 shrink-0" /> <span><b>Luce:</b> Aggiungi punti luce alla scena. Puoi regolarne l'intensità e il colore (calda, naturale, fredda) dalla barra laterale.</span></li>
                       </ul>
                     </div>
 
@@ -1293,19 +1372,27 @@ export default function Editor3DPage() {
                     {/* Template Selector */}
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-bold text-foreground/70">Forma della stanza</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {['rectangular', 'l-shape', 'chamfered', 'attic'].map(shape => (
+                      <div className="grid grid-cols-3 gap-2">
+                        {['rectangular', 'l-shape', 'chamfered', 'attic', 't-shape', 'u-shape', 'alcove', 'double-pitch', 'bow-window'].map(shape => (
                           <button
                             key={shape}
                             onClick={() => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, shape: shape as any } }))}
                             className={cn(
-                              "py-2 px-2 rounded-xl text-xs font-semibold border transition-all text-center truncate",
+                              "py-2 px-1 rounded-xl text-[10px] font-semibold border transition-all text-center truncate",
                               dialog.customRoomConfig?.shape === shape || (!dialog.customRoomConfig?.shape && shape === 'rectangular')
                                 ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
                                 : "bg-secondary/50 border-border text-foreground/70 hover:bg-secondary"
                             )}
                           >
-                            {shape === 'rectangular' ? 'Rettangolare' : shape === 'l-shape' ? 'Nicchia (L)' : shape === 'chamfered' ? 'Smussata' : 'Mansarda'}
+                            {shape === 'rectangular' && 'Rettangolo'}
+                            {shape === 'l-shape' && 'A forma di L'}
+                            {shape === 'chamfered' && 'Smussata'}
+                            {shape === 'attic' && 'Mansarda (1)'}
+                            {shape === 'double-pitch' && 'Mansarda (2)'}
+                            {shape === 't-shape' && 'A forma di T'}
+                            {shape === 'u-shape' && 'A forma di U'}
+                            {shape === 'alcove' && 'Con Nicchia'}
+                            {shape === 'bow-window' && 'Bovindo'}
                           </button>
                         ))}
                       </div>
@@ -1365,12 +1452,92 @@ export default function Editor3DPage() {
                         <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Taglio Angolo</label>
                         <input 
                           type="number" step="0.1"
-                          value={dialog.customRoomConfig.chamferSize}
-                          onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, chamferSize: e.target.value } }))}
+                          value={dialog.customRoomConfig.chamferSize || ''}
+                          onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, chamferSize: parseFloat(e.target.value) } }))}
                           className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                         />
                         <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
                       </div>
+                    )}
+
+                    {dialog.customRoomConfig?.shape === 't-shape' && (
+                      <>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Largh. Gamba</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.wingWidth || ''} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, wingWidth: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Prof. Gamba</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.wingLength || ''} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, wingLength: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                      </>
+                    )}
+
+                    {dialog.customRoomConfig?.shape === 'u-shape' && (
+                      <>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Largh. Vuoto (U)</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.cutoutWidth || ''} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, cutoutWidth: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Prof. Vuoto (U)</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.cutoutLength || ''} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, cutoutLength: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                      </>
+                    )}
+
+                    {dialog.customRoomConfig?.shape === 'alcove' && (
+                      <>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Largh. Nicchia</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.alcoveWidth || ''} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, alcoveWidth: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Prof. Nicchia</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.alcoveDepth || ''} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, alcoveDepth: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Posizione Nicchia (Offset)</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.alcoveOffset || 0} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, alcoveOffset: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                      </>
+                    )}
+
+                    {dialog.customRoomConfig?.shape === 'double-pitch' && (
+                      <>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Altezza Colmo</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.ridgeHeight || ''} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, ridgeHeight: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Alt. Ginocchielli</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.kneeHeight || ''} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, kneeHeight: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                      </>
+                    )}
+
+                    {dialog.customRoomConfig?.shape === 'bow-window' && (
+                      <>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Largh. Bovindo</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.bowWidth || ''} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, bowWidth: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <label className="w-20 sm:w-24 shrink-0 text-[10px] sm:text-xs font-bold text-foreground/70 leading-tight">Prof. Bovindo</label>
+                          <input type="number" step="0.1" value={dialog.customRoomConfig.bowDepth || ''} onChange={(e) => setDialog(prev => ({ ...prev, customRoomConfig: { ...prev.customRoomConfig!, bowDepth: parseFloat(e.target.value) } }))} className="flex-1 min-w-0 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                          <span className="text-xs text-foreground/50 w-6 shrink-0">m</span>
+                        </div>
+                      </>
                     )}
 
                     <div className="flex items-center gap-2 sm:gap-3">

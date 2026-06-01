@@ -83,6 +83,7 @@ function ModelLoader({ url, OrbitControlsRef, fixRotation = false, floorOffset =
   const innerGroupRef = useRef<Group>(null);
   const [selectedNode, setSelectedNode] = useState<Object3D | null>(null);
   const transformMode = useWorkspaceStore(state => state.transformMode);
+  const isReadOnly = useWorkspaceStore(state => state.isReadOnly);
   const [snapRotation, setSnapRotation] = useState(true);
   
   const selectedObjectId = useWorkspaceStore(state => state.selectedObjectId);
@@ -816,6 +817,82 @@ function ProceduralRoom({ config, setSelectedId, floorOffset = 0 }: { config: an
           {l: knee, r: knee}, 
           {l: knee, r: h} 
         ];
+      } else if (shape === 't-shape') {
+        const ww = config.wingWidth || w/2;
+        const wl = config.wingLength || l/2;
+        points = [
+          {x: -w/2, z: -l/2},
+          {x: w/2, z: -l/2},
+          {x: w/2, z: -l/2 + wl},
+          {x: ww/2, z: -l/2 + wl},
+          {x: ww/2, z: l/2},
+          {x: -ww/2, z: l/2},
+          {x: -ww/2, z: -l/2 + wl},
+          {x: -w/2, z: -l/2 + wl}
+        ];
+        wallHeights = Array(8).fill({l: h, r: h});
+      } else if (shape === 'u-shape') {
+        const cw = config.cutoutWidth || w/3;
+        const cl = config.cutoutLength || l/3;
+        points = [
+          {x: -w/2, z: -l/2},
+          {x: w/2, z: -l/2},
+          {x: w/2, z: l/2},
+          {x: cw/2, z: l/2},
+          {x: cw/2, z: l/2 - cl},
+          {x: -cw/2, z: l/2 - cl},
+          {x: -cw/2, z: l/2},
+          {x: -w/2, z: l/2}
+        ];
+        wallHeights = Array(8).fill({l: h, r: h});
+      } else if (shape === 'alcove') {
+        const aw = config.alcoveWidth || w/3;
+        const ad = config.alcoveDepth || l/4;
+        const ao = config.alcoveOffset || 0;
+        points = [
+          {x: -w/2, z: -l/2},
+          {x: ao - aw/2, z: -l/2},
+          {x: ao - aw/2, z: -l/2 - ad},
+          {x: ao + aw/2, z: -l/2 - ad},
+          {x: ao + aw/2, z: -l/2},
+          {x: w/2, z: -l/2},
+          {x: w/2, z: l/2},
+          {x: -w/2, z: l/2}
+        ];
+        wallHeights = Array(8).fill({l: h, r: h});
+      } else if (shape === 'double-pitch') {
+        const ridge = config.ridgeHeight || h + 1;
+        const knee = kneeHeight || 1.2;
+        points = [
+          {x: -w/2, z: -l/2},
+          {x: 0, z: -l/2},
+          {x: w/2, z: -l/2},
+          {x: w/2, z: l/2},
+          {x: 0, z: l/2},
+          {x: -w/2, z: l/2}
+        ];
+        wallHeights = [
+          {l: knee, r: ridge},
+          {l: ridge, r: knee},
+          {l: knee, r: knee},
+          {l: knee, r: ridge},
+          {l: ridge, r: knee},
+          {l: knee, r: knee}
+        ];
+      } else if (shape === 'bow-window') {
+        const bw = config.bowWidth || w/3;
+        const bd = config.bowDepth || l/4;
+        points = [
+          {x: -w/2, z: -l/2},
+          {x: w/2, z: -l/2},
+          {x: w/2, z: l/2},
+          {x: bw/2 + bd, z: l/2},
+          {x: bw/2, z: l/2 + bd},
+          {x: -bw/2, z: l/2 + bd},
+          {x: -bw/2 - bd, z: l/2},
+          {x: -w/2, z: l/2}
+        ];
+        wallHeights = Array(8).fill({l: h, r: h});
       }
 
       const generatedNodes: any[] = [];
@@ -914,6 +991,9 @@ export function RoomViewer3D({
   const selectedId = useWorkspaceStore(state => state.selectedObjectId);
   const setSelectedId = useWorkspaceStore(state => state.setSelectedObjectId);
   const customRoomConfig = useWorkspaceStore(state => state.customRoomConfig);
+  const cloudModelUrl = useWorkspaceStore(state => state.cloudModelUrl);
+  
+  const effectiveModelUrl = cloudModelUrl || customModelUrl;
 
   useEffect(() => {
     setMounted(true);
@@ -988,18 +1068,19 @@ export function RoomViewer3D({
         
         <gridHelper args={[Math.max(lenM, widM) * 2, 20, "#334155", "#1e293b"]} position={[0, -0.01, 0]} />
 
-        {customModelUrl ? (
+        {effectiveModelUrl ? (
           <ModelErrorBoundary 
             fallback={
               <Html center>
-                <div className="bg-red-500/90 text-white px-4 py-2 rounded-lg backdrop-blur text-sm flex items-center gap-2">
-                  ❌ Errore nel caricamento del modello. (File scaduto)
+                <div className="text-white text-sm bg-red-500/80 px-4 py-2 rounded-xl backdrop-blur-md">
+                  Errore nel caricamento del modello. (File scaduto o mancante)
                 </div>
               </Html>
             }
             onError={() => {
               const store = useWorkspaceStore.getState();
               store.setCustom3DModelUrl(null);
+              store.setCloudModelUrl(null);
             }}
           >
             <Suspense fallback={
@@ -1010,7 +1091,7 @@ export function RoomViewer3D({
                 </div>
               </Html>
             }>
-              <IDBWrapper url={customModelUrl}>
+              <IDBWrapper url={effectiveModelUrl}>
                 {(resolvedUrl) => (
                   <ModelLoader 
                     url={resolvedUrl} 

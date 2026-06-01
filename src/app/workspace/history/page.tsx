@@ -91,6 +91,15 @@ export default function HistoryPage() {
       addedObjects: safeAddedObjects,
       nodeTransformations: projectData.nodeTransformations || {},
       custom3DModelUrl: safeCustomUrl,
+      cloudModelUrl: projectData.cloudModelUrl || null,
+      customRoomConfig: projectData.customRoomConfig || {
+        shape: 'rectangular',
+        width: 4,
+        length: 5,
+        height: 2.8,
+        doorsCount: 1,
+        windowsCount: 1
+      },
       history: [], 
       loadedProjectOwner: ownerEmail,
     });

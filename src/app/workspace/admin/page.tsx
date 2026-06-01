@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { Shield, Users, HardDrive, Loader2, Check, AlertTriangle, ArrowRight } from "lucide-react";
+import { Shield, Users, HardDrive, Loader2, Check, AlertTriangle, ArrowRight, Settings, Save } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dbStats, setDbStats] = useState({ totalProjects: 0, estimatedSize: 0 });
+  const [dbStats, setDbStats] = useState({ totalProjects: 0, estimatedSize: 0, imagesSize: 0 });
+  const [maxScans, setMaxScans] = useState<string>('5');
+  const [isSavingScans, setIsSavingScans] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -41,9 +43,16 @@ export default function AdminDashboard() {
       
       // Load user images size
       const { data: imagesData } = await supabase.from('user_images').select('size_bytes');
-      const totalImagesSizeMB = (imagesData || []).reduce((acc, curr) => acc + Number(curr.size_bytes || 0), 0) / (1024 * 1024);
+      const totalImagesSizeMB = (imagesData || []).reduce((acc: number, curr: any) => acc + Number(curr.size_bytes || 0), 0) / (1024 * 1024);
       
       setDbStats({ totalProjects: count || 0, estimatedSize: estimatedMB + totalImagesSizeMB, imagesSize: totalImagesSizeMB });
+      
+      // Load max_public_scans
+      const { data: settingsData } = await supabase.from('app_settings').select('value').eq('key', 'max_public_scans').single();
+      if (settingsData && settingsData.value) {
+        setMaxScans(settingsData.value);
+      }
+      
       setLoading(false);
     }
     loadData();
@@ -54,6 +63,14 @@ export default function AdminDashboard() {
     setUsers(users.map(u => u.id === userId ? { ...u, permissions: updatedPerms } : u));
     const { error } = await supabase.from('users_roles').update({ permissions: updatedPerms }).eq('id', userId);
     if (error) alert("Errore nell'aggiornamento dei permessi.");
+  };
+
+  const handleSaveMaxScans = async () => {
+    setIsSavingScans(true);
+    const { error } = await supabase.from('app_settings').upsert({ key: 'max_public_scans', value: maxScans });
+    setIsSavingScans(false);
+    if (error) alert("Errore nel salvataggio del limite.");
+    else alert("Limite aggiornato con successo!");
   };
 
   if (loading) return <div className="flex-1 flex items-center justify-center min-h-[50vh]"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>;
@@ -116,6 +133,39 @@ export default function AdminDashboard() {
           <div className="bg-background rounded-2xl p-4 flex flex-col justify-center items-center border border-border">
             <span className="text-3xl font-black">{dbStats.totalProjects}</span>
             <span className="text-xs text-muted-foreground text-center uppercase tracking-widest mt-1">Progetti 3D Totali Salvati</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Impostazioni App */}
+      <div className="bg-surface border border-border rounded-3xl p-4 sm:p-6 shadow-sm mb-8">
+        <div className="flex items-center gap-3 mb-6">
+          <Settings className="w-5 h-5 text-green-500" />
+          <h2 className="text-lg sm:text-xl font-semibold">Impostazioni App</h2>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-background p-4 rounded-2xl border border-border">
+          <div>
+            <h3 className="font-bold text-sm">Limite Modelli 3D Scansionati</h3>
+            <p className="text-xs text-muted-foreground mt-1">Numero massimo di progetti pubblici con file .glb che un utente può caricare in Cloud.</p>
+          </div>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <input 
+              type="number" 
+              value={maxScans}
+              onChange={(e) => setMaxScans(e.target.value)}
+              className="w-20 bg-surface border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-bold"
+              min="1"
+              max="100"
+            />
+            <button 
+              onClick={handleSaveMaxScans}
+              disabled={isSavingScans}
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSavingScans ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Salva
+            </button>
           </div>
         </div>
       </div>

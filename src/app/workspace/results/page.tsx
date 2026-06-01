@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { 
   Download, Share2, Sliders, ShieldCheck, 
   Trash2, Sparkles, HelpCircle, CheckSquare, Square, 
-  DollarSign, ListTodo, ChevronRight, CornerDownRight
+  DollarSign, ListTodo, ChevronRight, CornerDownRight, Lightbulb
 } from "lucide-react";
 import Link from "next/link";
 import { useWorkspaceStore } from "@/store/workspaceStore"; // <-- IMPORTATO LO STORE
@@ -408,8 +408,11 @@ export default function ResultsPage() {
           </div>
 
           {/* Honesty disclaimer footer */}
-          <div className="p-3.5 bg-gray-50 dark:bg-gray-900/30 border border-gray-200/50 dark:border-gray-800/50 rounded-2xl text-[10px] text-foreground/50 leading-relaxed">
-            💡 <strong>Disclaimer di Confidenza AI:</strong> I modelli 3D e i render vengono calcolati proiettando le coordinate 2D delle foto nello spazio metrico. Per gli acquisti strutturali, verifica sempre le dimensioni sul posto con un metro tradizionale.
+          <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl p-4 text-xs lg:text-sm font-medium flex gap-3 shadow-inner">
+            <Lightbulb className="w-5 h-5 shrink-0 mt-0.5" />
+            <div>
+              <strong>Disclaimer di Confidenza AI:</strong> I modelli 3D e i render vengono calcolati proiettando le coordinate 2D delle foto nello spazio metrico. Per gli acquisti strutturali, verifica sempre le dimensioni sul posto con un metro tradizionale.
+            </div>
           </div>
         </div>
 

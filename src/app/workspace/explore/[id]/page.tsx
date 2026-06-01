@@ -87,6 +87,15 @@ export default function ReadOnlyProjectPage() {
             addedObjects: safeAddedObjects,
             nodeTransformations: data.data.workspaceData.nodeTransformations || {},
             custom3DModelUrl: safeCustomUrl,
+            cloudModelUrl: data.data.workspaceData.cloudModelUrl || null,
+            customRoomConfig: data.data.workspaceData.customRoomConfig || {
+              shape: 'rectangular',
+              width: 4,
+              length: 5,
+              height: 2.8,
+              doorsCount: 1,
+              windowsCount: 1
+            },
           });
         }
       }

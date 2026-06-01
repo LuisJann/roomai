@@ -22,6 +22,7 @@ interface ProjectsState {
 
 import { createClient } from "@/utils/supabase/client";
 import { useWorkspaceStore } from './workspaceStore';
+import { get as idbGet } from 'idb-keyval';
 
 export const useProjectsStore = create<ProjectsState>()((set, get) => ({
   projects: [],
@@ -38,6 +39,23 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => ({
     if (!user) {
       useWorkspaceStore.getState().addNotification({ message: "Devi effettuare l'accesso per salvare i progetti in Cloud.", type: "error" });
       return;
+    }
+
+    // Controlla se esiste già un progetto con questo nome per questo utente
+    try {
+      const { data: existingProject } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('name', name)
+        .single();
+        
+      if (existingProject) {
+        useWorkspaceStore.getState().addNotification({ message: `Hai già un progetto chiamato "${name}". Scegli un nome diverso.`, type: "error" });
+        return;
+      }
+    } catch (e) {
+      // Ignora l'errore se non trova nulla (PGRST116 è l'errore per "0 rows returned" da .single())
     }
 
     const safeWorkspaceData = { ...workspaceData };
@@ -68,6 +86,78 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => ({
         likes: [],
         comments: []
       };
+
+      // Upload local GLB file to Supabase Storage if present
+      if (safeWorkspaceData.custom3DModelUrl?.startsWith('idb://')) {
+        const fileId = safeWorkspaceData.custom3DModelUrl.replace('idb://', '');
+        
+        const uploadNotificationId = 'upload-glb-info';
+        useWorkspaceStore.getState().addNotification({ id: uploadNotificationId, message: "Upload del file 3D in corso...", type: "info" });
+
+        // 1. Fetch limit and admin status
+        let maxScans = 5;
+        let isAdmin = false;
+        try {
+          const { data: settingsData } = await supabase.from('app_settings').select('value').eq('key', 'max_public_scans').single();
+          if (settingsData && settingsData.value) {
+            maxScans = parseInt(settingsData.value);
+          }
+          const { data: roleData } = await supabase.from('users_roles').select('role').eq('id', user.id).single();
+          if (roleData && roleData.role === 'admin') isAdmin = true;
+        } catch (e) {
+          console.error("Error reading app_settings or role", e);
+        }
+        
+        // 2. Count existing public scans
+        try {
+          const { data: userProjects } = await supabase.from('projects').select('data').eq('user_id', user.id);
+          const publicScansCount = (userProjects || []).filter(p => {
+            return p.data?.social?.is_public === true && 
+                   p.data?.workspaceData?.cloudModelUrl;
+          }).length;
+          
+          if (!isAdmin && publicScansCount >= maxScans) {
+            useWorkspaceStore.getState().removeNotification('upload-glb-info');
+            useWorkspaceStore.getState().addNotification({ message: `Hai raggiunto il limite massimo di ${maxScans} modelli scansionati pubblici. CanceIla un progetto pubblico per liberare spazio.`, type: "error" });
+            return; // Abort save
+          }
+        } catch (e) {
+          console.error("Error counting scans", e);
+        }
+        
+        // 3. Upload file
+        const file = await idbGet(fileId);
+        if (file instanceof File || file instanceof Blob) {
+          const fileExt = file instanceof File ? file.name.split('.').pop() : 'glb';
+          const fileName = `${user.id}/${Date.now()}_${fileId}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('public-project')
+            .upload(fileName, file, {
+              contentType: file.type || 'model/gltf-binary',
+              upsert: false
+            });
+            
+          useWorkspaceStore.getState().removeNotification('upload-glb-info');
+            
+          if (uploadError) {
+            console.error('Storage Upload Error:', uploadError);
+            useWorkspaceStore.getState().addNotification({ message: "Errore nel caricamento del file 3D nel cloud. Verifica i permessi del bucket.", type: "error" });
+            return; // Abort save if upload fails
+          }
+          
+          const { data: publicUrlData } = supabase.storage
+            .from('public-project')
+            .getPublicUrl(fileName);
+            
+          safeWorkspaceData.cloudModelUrl = publicUrlData.publicUrl;
+          projectData.workspaceData.cloudModelUrl = publicUrlData.publicUrl;
+        } else {
+            useWorkspaceStore.getState().removeNotification('upload-glb-info');
+            useWorkspaceStore.getState().addNotification({ message: "File 3D non trovato nel browser locale.", type: "error" });
+            return;
+        }
+      }
     }
 
     try {

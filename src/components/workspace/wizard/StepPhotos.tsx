@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { 
   Upload, Camera, Smartphone, AlertCircle, CheckCircle2, 
-  X, RefreshCw, SmartphoneIcon, Info, Eye, EyeOff
+  X, RefreshCw, SmartphoneIcon, Info, Eye, EyeOff, LayoutGrid, Aperture, Lightbulb, Home
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -127,10 +127,10 @@ export function StepPhotos({ onNext }: StepPhotosProps) {
   }, [sessionId]);
 
   const guidelines = [
-    { title: "Almeno 4 angolazioni", desc: "Fotografa la stanza da ogni angolo per consentire la ricostruzione prospettica.", icon: "📐" },
-    { title: "Inquadra bene i dettagli", desc: "Assicurati di mostrare chiaramente pareti, pavimento, finestre e porte.", icon: "🚪" },
-    { title: "Evita mosso o buio", desc: "Accendi le luci se necessario per far rilevare la profondità all'AI.", icon: "💡" },
-    { title: "Angoli visibili", desc: "Cerca di catturare le linee di intersezione tra pareti e soffitto/pavimento.", icon: "🏠" }
+    { title: "Almeno 4 angolazioni", desc: "Fotografa la stanza da ogni angolo per consentire la ricostruzione prospettica.", icon: <LayoutGrid className="w-5 h-5" /> },
+    { title: "Inquadra bene i dettagli", desc: "Assicurati di mostrare chiaramente pareti, pavimento, finestre e porte.", icon: <Aperture className="w-5 h-5" /> },
+    { title: "Evita mosso o buio", desc: "Accendi le luci se necessario per far rilevare la profondità all'AI.", icon: <Lightbulb className="w-5 h-5" /> },
+    { title: "Angoli visibili", desc: "Cerca di catturare le linee di intersezione tra pareti e soffitto/pavimento.", icon: <Home className="w-5 h-5" /> }
   ];
 
   const analyzeImageFromUrl = (url: string, id: string) => {
